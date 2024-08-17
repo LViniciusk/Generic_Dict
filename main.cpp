@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include "./EDs/AVLTree.h"
 #include "./EDs/Dict.h"
 #include <unicode/unistr.h>  
@@ -20,7 +21,7 @@ int main() {
     Dict<AVLTree<icu::UnicodeString, u_comparator>> dict;
 
     // abre arquivo no modo leitura
-    ifstream file("exemplo.txt");
+    ifstream file("biblia-em-txt.txt");
 
     // teste se arquivo foi realmente abertog
     if(!file.is_open()) {
@@ -28,13 +29,26 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    // ler as linhas do arquivo
-    string utf8line;
-    while(getline(file, utf8line)) {
-        icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(utf8line);
-        ustr.toLower();
-        dict.add(ustr, 2);
+    string arq((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    icu::UnicodeString uarq = icu::UnicodeString::fromUTF8(arq);
+    uarq.toLower();
+    for(int i = 0; i < uarq.length(); i++) {
+        if(!u_isUAlphabetic(uarq[i])) {
+            uarq.replace(i, 1, ' ');
+        }
     }
+
+    uarq.toUTF8String(arq);
+
+    stringstream iss(arq);
+
+    string word;
+    while(iss >> word) {
+        icu::UnicodeString uword = icu::UnicodeString::fromUTF8(word);
+        dict.add(uword);
+    }
+    
+
     file.close();
 
     string k;

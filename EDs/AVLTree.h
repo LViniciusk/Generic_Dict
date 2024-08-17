@@ -347,7 +347,7 @@ public:
     void print() const
     {
         bshow(root, "");
-        _print(root);
+       // _print(root);
     }
 
     unsigned int size() const
