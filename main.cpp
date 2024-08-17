@@ -39,7 +39,6 @@ int main() {
 
     string k;
 
-    // palavra minina
     cout << dict.max().toUTF8String(k) << endl;
 
     // imprime a árvore

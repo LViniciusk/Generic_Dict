@@ -11,6 +11,7 @@
 
 template<typename T>
 struct comparator{
+    icu::Collator* collator;
     bool operator()(const T& a, const T& b) const{
         return a < b;
     }
@@ -239,7 +240,8 @@ public:
 
     ~AVLTree() {
         _clear(root);
-        delete compare.collator;
+        if(compare.collator != NULL)
+            delete compare.collator;
     }
 
     void insert(T key, unsigned int value = 1) {
