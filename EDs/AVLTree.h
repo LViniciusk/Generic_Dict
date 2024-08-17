@@ -25,6 +25,7 @@ struct u_comparator{
         UErrorCode status = U_ZERO_ERROR;
         collator = icu::Collator::createInstance(status);
     }
+    
 
     bool operator()(const icu::UnicodeString& a, const icu::UnicodeString& b) const{
         UErrorCode status = U_ZERO_ERROR;
@@ -195,6 +196,13 @@ private:
         _print(node->right);
     }
 
+    void _clear(Node<T>* node) {
+        if (node == nullptr) return;
+        _clear(node->left);
+        _clear(node->right);
+        delete node;
+    }
+
     // Imprime a árvore na tela
     void bshow(Node<T>* node, std::string heranca) const {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr)) {
@@ -229,6 +237,11 @@ public:
         _size = 0;
     }
 
+    ~AVLTree() {
+        _clear(root);
+        delete compare.collator;
+    }
+
     void insert(T key, unsigned int value = 1) {
         root = _insert(root, key, value);
     }
@@ -241,14 +254,26 @@ public:
         root = _update(root, key, value);
     }
 
-    T find(T key) {
+    bool find(T key) {
         Node<T>* node = root;
         while (node != nullptr) {
             if (compare(key, node->key)) node = node->left;
             else if (compare(node->key, key)) node = node->right;
-            else return node->key;
+            else return true;
         }
-        return T();
+        return false;
+    }
+
+    T min() {
+        Node<T>* node = root;
+        while (node->left != nullptr) node = node->left;
+        return node->key;
+    }
+
+    T max() {
+        Node<T>* node = root;
+        while (node->right != nullptr) node = node->right;
+        return node->key;
     }
 
     void print() const {
@@ -256,8 +281,8 @@ public:
         _print(root);
     }
 
-    void size() const {
-        std::cout << _size << std::endl;
+    unsigned int size() const {
+        return _size;
     }
 
 };

@@ -16,14 +16,9 @@ public:
         _dict.insert(key, value);
     }
 
-    void print()
+    void remove(icu::UnicodeString key, unsigned int value = 1)
     {
-        _dict.print();
-    }
-
-    void remove(icu::UnicodeString key)
-    {
-        _dict.remove(key);
+        _dict.remove(key, value);
     }
 
     void update(icu::UnicodeString key, unsigned int value)
@@ -31,9 +26,29 @@ public:
         _dict.update(key, value);
     }
 
-    void size()
+    unsigned int size()
     {
-        _dict.size();
+       return _dict.size();
+    }
+
+    bool find(icu::UnicodeString key)
+    {
+        return _dict.find(key);
+    }
+
+    icu::UnicodeString min()
+    {
+        return _dict.min();
+    }
+
+    icu::UnicodeString max()
+    {
+        return _dict.max();
+    }
+
+    void print()
+    {
+        _dict.print();
     }
 };
 

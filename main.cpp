@@ -33,9 +33,14 @@ int main() {
     while(getline(file, utf8line)) {
         icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(utf8line);
         ustr.toLower();
-        dict.add(ustr);
+        dict.add(ustr, 2);
     }
     file.close();
+
+    string k;
+
+    // palavra minina
+    cout << dict.max().toUTF8String(k) << endl;
 
     // imprime a árvore
     dict.print();
