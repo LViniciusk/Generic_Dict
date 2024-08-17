@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Win32-MinGW",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/msys64/mingw64/include",
+                "${env:ICU_INCLUDE}"  // Assegure-se que essa variável de ambiente está definida
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",  // Caminho para o compilador MinGW
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
