@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include "AVLTree.h"
+#include "RBTree.h"
+#include "Hash.h"
+#include "Hash2.h"
 
 template <typename KeyType>
 class Dict
@@ -11,14 +14,24 @@ private:
     KeyType _dict;
 
 public:
-    void add(icu::UnicodeString key, unsigned int value = 1)
+    void add(std::stringstream &file)
     {
-        _dict.insert(key, value);
+        std::string word;
+        while (file >> word)
+        {
+            _dict.insert(icu::UnicodeString::fromUTF8(
+                icu::StringPiece(word.c_str(), word.size())));
+        }
     }
 
-    void remove(icu::UnicodeString key, unsigned int value = 1)
+    void print()
     {
-        _dict.remove(key, value);
+        _dict.print();
+    }
+
+    void remove(icu::UnicodeString key)
+    {
+        _dict.remove(key);
     }
 
     void update(icu::UnicodeString key, unsigned int value)
@@ -26,29 +39,14 @@ public:
         _dict.update(key, value);
     }
 
-    unsigned int size()
+    size_t size()
     {
-       return _dict.size();
+        return _dict.size();
     }
 
-    bool find(icu::UnicodeString key)
+    size_t comparisons()
     {
-        return _dict.find(key);
-    }
-
-    icu::UnicodeString min()
-    {
-        return _dict.min();
-    }
-
-    icu::UnicodeString max()
-    {
-        return _dict.max();
-    }
-
-    void print()
-    {
-        _dict.print();
+        return _dict.comparisons();
     }
 };
 

@@ -3,38 +3,11 @@
 
 #include <iostream>
 #include <string>
-#include <unicode/unistr.h>  // for UnicodeString
-#include <unicode/ustream.h> // for supporting output of UnicodeString
-#include <unicode/ucnv.h>    // For text file encoding conversions
+#include <unicode/unistr.h>
+#include <unicode/ustream.h>
+#include <unicode/ucnv.h>
 #include <unicode/coll.h>
-
-template <typename T>
-struct comparator
-{
-    icu::Collator *collator;
-    bool operator()(const T &a, const T &b) const
-    {
-        return a < b;
-    }
-};
-
-struct u_comparator
-{
-    icu::Collator *collator;
-
-    u_comparator(icu::Collator *c) { collator = c; }
-    u_comparator()
-    {
-        UErrorCode status = U_ZERO_ERROR;
-        collator = icu::Collator::createInstance(status);
-    }
-
-    bool operator()(const icu::UnicodeString &a, const icu::UnicodeString &b) const
-    {
-        UErrorCode status = U_ZERO_ERROR;
-        return collator->compare(a, b, status) < 0;
-    }
-};
+#include "extras.h"
 
 template <typename T>
 struct Node
@@ -53,6 +26,7 @@ class AVLTree
 private:
     Node<T> *root = nullptr;
     COMPARATOR compare;
+    unsigned int comps = 0;
     unsigned int _size = 0;
 
     int height(Node<T> *node)
@@ -164,10 +138,16 @@ private:
     {
         if (node == nullptr)
             return node;
+        comps++;
         if (key < node->key)
+        {
             node->left = _delete(node->left, key, value);
+        }
         else if (key > node->key)
+        {
+            comps++;
             node->right = _delete(node->right, key, value);
+        }
         else if (node->frequence > value)
         {
             node->frequence -= value;
@@ -192,17 +172,19 @@ private:
             _size++;
             return new Node<T>(key, value);
         }
-
+        comps++;
         if (compare(key, node->key))
         {
             node->left = _insert(node->left, key, value);
         }
         else if (compare(node->key, key))
         {
+            comps++;
             node->right = _insert(node->right, key, value);
         }
         else
         {
+            comps++;
             node->frequence += value;
             return node;
         }
@@ -216,12 +198,21 @@ private:
     {
         if (node == nullptr)
             return node;
+        comps++;
         if (compare(key, node->key))
+        {
             node->left = _update(node->left, key, value);
+        }
         else if (compare(node->key, key))
+        {
+            comps++;
             node->right = _update(node->right, key, value);
+        }
         else
+        {
+            comps++;
             node->frequence = value;
+        }
         return node;
     }
 
@@ -240,15 +231,6 @@ private:
         else
             std::cout << node->key << " (" << node->frequence << ")" << std::endl;
         _print(node->right);
-    }
-
-    void _clear(Node<T> *node)
-    {
-        if (node == nullptr)
-            return;
-        _clear(node->left);
-        _clear(node->right);
-        delete node;
     }
 
     // Imprime a árvore na tela
@@ -292,12 +274,6 @@ public:
         _size = 0;
     }
 
-    ~AVLTree()
-    {
-        _clear(root);
-        delete compare.collator;
-    }
-
     void insert(T key, unsigned int value = 1)
     {
         root = _insert(root, key, value);
@@ -313,44 +289,42 @@ public:
         root = _update(root, key, value);
     }
 
-    bool find(T key)
+    T find(T key)
     {
         Node<T> *node = root;
         while (node != nullptr)
         {
+            comps++;
             if (compare(key, node->key))
+            {
                 node = node->left;
+            }
             else if (compare(node->key, key))
+            {
+                comps++;
                 node = node->right;
+            }
             else
-                return true;
+            {
+                comps++;
+                return node->key;
+            }
         }
-        return false;
-    }
-
-    T min()
-    {
-        Node<T> *node = root;
-        while (node->left != nullptr)
-            node = node->left;
-        return node->key;
-    }
-
-    T max()
-    {
-        Node<T> *node = root;
-        while (node->right != nullptr)
-            node = node->right;
-        return node->key;
+        return T();
     }
 
     void print() const
     {
-        bshow(root, "");
-       // _print(root);
+        // bshow(root, "");
+        _print(root);
     }
 
-    unsigned int size() const
+    size_t comparisons()
+    {
+        return comps;
+    }
+
+    size_t size() const
     {
         return _size;
     }
