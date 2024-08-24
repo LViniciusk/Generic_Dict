@@ -138,14 +138,12 @@ private:
     {
         if (node == nullptr)
             return node;
-        comps++;
         if (key < node->key)
         {
             node->left = _delete(node->left, key, value);
         }
         else if (key > node->key)
         {
-            comps++;
             node->right = _delete(node->right, key, value);
         }
         else if (node->frequence > value)
@@ -198,19 +196,16 @@ private:
     {
         if (node == nullptr)
             return node;
-        comps++;
         if (compare(key, node->key))
         {
             node->left = _update(node->left, key, value);
         }
         else if (compare(node->key, key))
         {
-            comps++;
             node->right = _update(node->right, key, value);
         }
         else
         {
-            comps++;
             node->frequence = value;
         }
         return node;
@@ -294,19 +289,16 @@ public:
         Node<T> *node = root;
         while (node != nullptr)
         {
-            comps++;
             if (compare(key, node->key))
             {
                 node = node->left;
             }
             else if (compare(node->key, key))
             {
-                comps++;
                 node = node->right;
             }
             else
             {
-                comps++;
                 return node->key;
             }
         }

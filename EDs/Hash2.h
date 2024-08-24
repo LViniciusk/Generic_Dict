@@ -2,43 +2,38 @@
 #define HASHTABLE2_H
 
 #include <iostream>
-#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
-#include <utility>
 #include <functional>
 #include <unicode/unistr.h>
 #include <unicode/ustream.h>
 #include <unicode/ucnv.h>
 #include <unicode/coll.h>
+#include "extras.h"
 
-template <typename Key, typename Value = int, typename Hash = std::hash<Key>>
+template <typename Key, typename Value = int, typename COMPARATOR = comparator<Key>, typename Hash = std::hash<Key>>
 class HashTable2
 {
 private:
-    enum State
-    {
-        EMPTY,
-        OCCUPIED,
-        DELETED
-    };
+    enum EntryState { EMPTY, OCCUPIED, DELETED };
 
-    struct Entry
-    {
+    struct Entry {
         Key key;
         Value value;
-        State state;
+        EntryState state;
+
         Entry() : state(EMPTY) {}
     };
 
     size_t m_number_of_elements;
     size_t m_table_size;
-    std::vector<Entry> *m_table;
+    std::vector<Entry> m_table;
     float m_load_factor;
     float m_max_load_factor;
     Hash m_hashing;
     unsigned int comps = 0;
+    COMPARATOR compare;
 
     size_t get_next_prime(size_t x)
     {
@@ -67,30 +62,6 @@ private:
         return (m_hashing(k) + i) % m_table_size;
     }
 
-    void unordered_print()
-    {
-        std::cout << "HashTable" << std::endl;
-        for (size_t i = 0; i < m_table_size; i++)
-        {
-            std::cout << i << ": ";
-            if ((*m_table)[i].state == OCCUPIED)
-            {
-                if constexpr (std::is_same<Key, icu::UnicodeString>::value)
-                {
-                    std::string skey;
-                    (*m_table)[i].key.toUTF8String(skey);
-                    std::cout << skey << " ";
-                }
-                else
-                {
-                    std::cout << (*m_table)[i].key << " ";
-                }
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
     void ordered_print()
     {
         std::cout << "Ordered HashTable" << std::endl;
@@ -99,14 +70,16 @@ private:
 
         for (size_t i = 0; i < m_table_size; ++i)
         {
-            if ((*m_table)[i].state == OCCUPIED)
+            if (m_table[i].state == OCCUPIED)
             {
-                elements.emplace_back((*m_table)[i].key, (*m_table)[i].value);
+                elements.push_back({m_table[i].key, m_table[i].value});
             }
         }
 
-        std::sort(elements.begin(), elements.end(), [](const std::pair<Key, Value> &a, const std::pair<Key, Value> &b)
-                  { return a.first < b.first; });
+        std::sort(elements.begin(), elements.end(), [this](const std::pair<Key, Value> &a, const std::pair<Key, Value> &b)
+        {
+            return compare(a.first, b.first);
+        });
 
         for (const auto &p : elements)
         {
@@ -128,13 +101,14 @@ public:
     HashTable2(const HashTable2 &t) = delete;
     HashTable2 &operator=(const HashTable2 &t) = delete;
 
-    HashTable2(size_t tableSize = 19, const Hash &hf = Hash())
+    HashTable2(size_t tableSize = 19, const Hash &hf = Hash(), COMPARATOR comp = COMPARATOR() )
     {
+        compare = comp;
         m_number_of_elements = 0;
         m_table_size = tableSize;
-        m_table = new std::vector<Entry>(m_table_size);
+        m_table.resize(m_table_size);
         m_load_factor = 0.75;
-        m_max_load_factor = 1;
+        m_max_load_factor = 1.0;
         m_hashing = hf;
     }
 
@@ -153,30 +127,10 @@ public:
         return m_table_size;
     }
 
-    size_t bucket_size(size_t n) const
-    {
-        return ((*m_table)[n].state == OCCUPIED) ? 1 : 0;
-    }
-
-    size_t bucket(const Key &k) const
-    {
-        size_t i = 0;
-        size_t index;
-        do
-        {
-            index = hash_code(k, i++);
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
-                return index;
-        } while ((*m_table)[index].state != EMPTY);
-        return index;
-    }
-
     void clear()
     {
-        for (size_t i = 0; i < m_table_size; i++)
-        {
-            (*m_table)[i] = Entry();
-        }
+        m_table.clear();
+        m_table.resize(m_table_size);
         m_number_of_elements = 0;
     }
 
@@ -193,7 +147,6 @@ public:
     ~HashTable2()
     {
         clear();
-        delete m_table;
     }
 
     bool insert(const Key &k, const Value &v = 1)
@@ -202,27 +155,30 @@ public:
         {
             rehash(2 * m_table_size);
         }
+
         size_t i = 0;
         size_t index;
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == EMPTY || (*m_table)[index].state == DELETED)
+            if (m_table[index].state == EMPTY || m_table[index].state == DELETED)
             {
-                (*m_table)[index].key = k;
-                (*m_table)[index].value = v;
-                (*m_table)[index].state = OCCUPIED;
+                m_table[index].key = k;
+                m_table[index].value = v;
+                m_table[index].state = OCCUPIED;
                 m_number_of_elements++;
                 return true;
             }
-            else if ((*m_table)[index].key == k)
+            else if (m_table[index].key == k)
             {
                 comps++;
-                (*m_table)[index].value += v;
+                m_table[index].value += v;
                 return true;
             }
             comps++;
-        } while (true);
+        } while (i < m_table_size);
+
+        return false;
     }
 
     bool contains(const Key &k)
@@ -232,12 +188,11 @@ public:
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == EMPTY)
+            if (m_table[index].state == EMPTY)
                 return false;
-            comps++;
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
+            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
                 return true;
-        } while ((*m_table)[index].state != EMPTY);
+        } while (i < m_table_size);
         return false;
     }
 
@@ -248,10 +203,9 @@ public:
         do
         {
             index = hash_code(k, i++);
-            comps++;
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
-                return (*m_table)[index].value;
-        } while ((*m_table)[index].state != EMPTY);
+            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
+                return m_table[index].value;
+        } while (i < m_table_size);
         throw std::out_of_range("Key not found");
     }
 
@@ -259,23 +213,26 @@ public:
     {
         if (m <= m_table_size)
             return;
+
         size_t new_size = get_next_prime(m);
-        std::vector<Entry> *new_table = new std::vector<Entry>(new_size);
+        std::vector<Entry> new_table(new_size);
+
         for (size_t i = 0; i < m_table_size; i++)
         {
-            if ((*m_table)[i].state == OCCUPIED)
+            if (m_table[i].state == OCCUPIED)
             {
                 size_t j = 0;
                 size_t index;
                 do
                 {
-                    index = (m_hashing((*m_table)[i].key) + j++) % new_size;
-                } while ((*new_table)[index].state == OCCUPIED);
-                (*new_table)[index] = (*m_table)[i];
+                    index = (m_hashing(m_table[i].key) + j++) % new_size;
+                } while (new_table[index].state == OCCUPIED);
+
+                new_table[index] = m_table[i];
             }
         }
-        delete m_table;
-        m_table = new_table;
+
+        m_table = std::move(new_table);
         m_table_size = new_size;
     }
 
@@ -286,16 +243,15 @@ public:
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == EMPTY)
+            if (m_table[index].state == EMPTY)
                 return false;
-            comps++;
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
+            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
-                (*m_table)[index].state = DELETED;
+                m_table[index].state = DELETED;
                 m_number_of_elements--;
                 return true;
             }
-        } while ((*m_table)[index].state != EMPTY);
+        } while (i < m_table_size);
         return false;
     }
 
@@ -306,15 +262,12 @@ public:
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == EMPTY)
-                return false;
-            comps++;
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
+            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
-                (*m_table)[index].value = v;
+                m_table[index].value = v;
                 return true;
             }
-        } while ((*m_table)[index].state != EMPTY);
+        } while (i < m_table_size);
         return false;
     }
 
@@ -353,21 +306,20 @@ public:
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == EMPTY)
+            if (m_table[index].state == EMPTY)
             {
-                (*m_table)[index].key = k;
-                (*m_table)[index].value = Value();
-                (*m_table)[index].state = OCCUPIED;
+                m_table[index].key = k;
+                m_table[index].value = Value();
+                m_table[index].state = OCCUPIED;
                 m_number_of_elements++;
-                return (*m_table)[index].value;
+                return m_table[index].value;
             }
-            else if ((*m_table)[index].key == k)
+            else if (m_table[index].key == k)
             {
-                comps++;
-                return (*m_table)[index].value;
+                return m_table[index].value;
             }
-            comps++;
-        } while (true);
+        } while (i < m_table_size);
+        throw std::out_of_range("Key not found");
     }
 
     const Value &operator[](const Key &k) const
@@ -377,11 +329,11 @@ public:
         do
         {
             index = hash_code(k, i++);
-            if ((*m_table)[index].state == OCCUPIED && (*m_table)[index].key == k)
+            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
-                return (*m_table)[index].value;
+                return m_table[index].value;
             }
-        } while (true);
+        } while (i < m_table_size);
         throw std::out_of_range("Key not found");
     }
 };

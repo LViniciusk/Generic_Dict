@@ -223,19 +223,16 @@ private:
 
         while (z != nullptr)
         {
-            comps++;
             if (key == z->key)
             {
                 break;
             }
             else if (compare(key, z->key))
             {
-                comps++;
                 z = z->left;
             }
             else
             {
-                comps++;
                 z = z->right;
             }
         }
@@ -355,19 +352,16 @@ public:
         RBNode<T> *node = root;
         while (node != nullptr)
         {
-            comps++;
             if (compare(key, node->key))
             {
                 node = node->left;
             }
             else if (compare(node->key, key))
             {
-                comps++;
                 node = node->right;
             }
             else
             {
-                comps++;
                 node->frequence = value;
                 return;
             }
@@ -379,19 +373,16 @@ public:
         RBNode<T> *node = root;
         while (node != nullptr)
         {
-            comps++;
             if (compare(key, node->key))
             {
                 node = node->left;
             }
             else if (compare(node->key, key))
             {
-                comps++;
                 node = node->right;
             }
             else
             {
-                comps++;
                 return node->key;
             }
         }

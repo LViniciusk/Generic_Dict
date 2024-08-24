@@ -60,13 +60,13 @@ stringstream read_file(const string &file_path)
 
 string TypeName(string type)
 {
-    if (type == "4DictI9HashTableIN6icu_7513UnicodeStringEiSt4hashIS2_EEE")
+    if (type == "4DictI9HashTableIN6icu_7513UnicodeStringEi12u_comparatorSt4hashIS2_EEE")
         return "HashTable Separate Chaining";
     else if (type == "4DictI7AVLTreeIN6icu_7513UnicodeStringE12u_comparatorEE")
         return "AVLTree";
     else if (type == "4DictI6RBTreeIN6icu_7513UnicodeStringE12u_comparatorEE")
         return "RBTree";
-    else if (type == "4DictI10HashTable2IN6icu_7513UnicodeStringEiSt4hashIS2_EEE")
+    else if (type == "4DictI10HashTable2IN6icu_7513UnicodeStringEi12u_comparatorSt4hashIS2_EEE")
         return "HashTable Open Addressing";
     else
         return "Unknown";

@@ -19,10 +19,10 @@ using namespace icu;
 int main()
 {
     // Cria um dicionário de palavras
-    Dict<HashTable<UnicodeString>> dict;
+    Dict<HashTable<UnicodeString, int, u_comparator>> dict;
 
     // Define o nome do arquivo
-    string filename = "insane";
+    string filename = "biblia_sagrada_english";
 
     // Inicia a contagem do tempo
     auto start = high_resolution_clock::now();
@@ -35,7 +35,6 @@ int main()
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
 
-    dict.print();
 
     // Imprime o tempo de execução
     cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;

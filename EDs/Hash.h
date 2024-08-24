@@ -13,8 +13,9 @@
 #include <unicode/ustream.h>
 #include <unicode/ucnv.h>
 #include <unicode/coll.h>
+#include "extras.h"
 
-template <typename Key, typename Value = int, typename Hash = std::hash<Key>>
+template <typename Key, typename Value = int, typename COMPARATOR = comparator<Key>, typename Hash = std::hash<Key>>
 class HashTable
 {
 private:
@@ -25,6 +26,7 @@ private:
     float m_max_load_factor;
     Hash m_hashing;
     unsigned int comps = 0;
+    COMPARATOR compare;
 
     size_t get_next_prime(size_t x)
     {
@@ -89,8 +91,8 @@ private:
             }
         }
 
-        std::sort(elements.begin(), elements.end(), [](const std::pair<Key, Value> &a, const std::pair<Key, Value> &b)
-                  { return a.first < b.first; });
+        std::sort(elements.begin(), elements.end(), [this](const std::pair<Key, Value> &a, const std::pair<Key, Value> &b)
+                  { return compare(a.first, b.first); });
 
         for (const auto &p : elements)
         {
@@ -110,8 +112,9 @@ public:
     HashTable(const HashTable &t) = delete;
     HashTable &operator=(const HashTable &t) = delete;
 
-    HashTable(size_t tableSize = 19, const Hash &hf = Hash())
+    HashTable(size_t tableSize = 19, const Hash &hf = Hash(), COMPARATOR comp = COMPARATOR())
     {
+        compare = comp;
         m_number_of_elements = 0;
         m_table_size = tableSize;
         m_table = new std::vector<std::list<std::pair<Key, Value>>>(m_table_size);
