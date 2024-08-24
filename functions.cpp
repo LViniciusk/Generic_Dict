@@ -71,3 +71,13 @@ string TypeName(string type)
     else
         return "Unknown";
 }
+
+void display_usage(const char *program_name) {
+    cerr << endl << "Uso: " << " <modo_estrutura> <arquivo(deve estar na pasta Textos)>" << endl
+         << "Modos de estrutura suportados: "<< endl << "1 = dict_avl" << endl << "2 = dict_rb" << endl << "3 = dict_hash_addressing" << endl <<  "4 = dict_hash_chaining" << endl;
+}
+
+
+bool is_valid_structure(const int &mode_structure) {
+    return mode_structure >= 1 && mode_structure <= 4;
+}

@@ -70,22 +70,25 @@ private:
     {
         node->height = max(height(node->left), height(node->right)) + 1;
         int bal = balance(node);
-
+        comps++;
         if (bal > 1 && balance(node->right) >= 0)
         {
             return leftRotate(node);
         }
         else if (bal > 1 && balance(node->right) < 0)
         {
+            comps++;
             node->right = rightRotate(node->right);
             return leftRotate(node);
         }
         else if (bal < -1 && balance(node->left) <= 0)
         {
+            comps+=2;
             return rightRotate(node);
         }
         else if (bal < -1 && balance(node->left) > 0)
         {
+            comps+=3;
             node->left = leftRotate(node->left);
             return rightRotate(node);
         }
