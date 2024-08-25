@@ -25,6 +25,19 @@ int main(int argc, char *argv[])
         display_usage(argv[0]);
         return 1;
     }
+
+    // Abre o arquivo de saída
+    ofstream out("./output/saida.txt");
+    if (!out)
+    {
+        cerr << "Erro ao abrir o arquivo de saída" << endl;
+        return 1;
+    }
+
+    // Redireciona cout para o arquivo de saída
+    streambuf *coutbuf = cout.rdbuf(); // salva o buffer original
+    cout.rdbuf(out.rdbuf()); // redireciona cout para o arquivo
+
     // Define o modo de estrutura
     int mode_structure = std::stoi(argv[1]);
 
@@ -53,6 +66,8 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+        cout << "Lista de palavras: " << endl << endl;
+        dict.print();        
     }
     else if (mode_structure == 2)
     {
@@ -75,6 +90,8 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+        cout << "Lista de palavras: " << endl << endl;
+        dict.print();
     }
     else if (mode_structure == 3)
     {
@@ -97,6 +114,8 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+        cout << "Lista de palavras: " << endl << endl;
+        dict.print();
     }
     else if (mode_structure == 4)
     {
@@ -119,6 +138,8 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+        cout << "Lista de palavras: " << endl << endl;
+        dict.print();
     }
     else
     {
@@ -126,6 +147,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Restaura o buffer original do cout
+    cout.rdbuf(coutbuf);
 
     return 0;
 }

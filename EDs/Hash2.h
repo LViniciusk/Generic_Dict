@@ -64,7 +64,6 @@ private:
 
     void ordered_print()
     {
-        std::cout << "Ordered HashTable" << std::endl;
         std::vector<std::pair<Key, Value>> elements;
         elements.reserve(m_number_of_elements);
 
