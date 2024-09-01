@@ -10,16 +10,15 @@
 #include "extras.h"
 
 // Estrutura de nó da árvore AVL
-template <typename T, typename Value = int>
+template <typename T, typename Value>
 struct Node
 {
-    T key;                 // Chave do nó
-    Node<T, Value> *left;  // Ponteiro para o filho esquerdo
-    Node<T, Value> *right; // Ponteiro para o filho direito
-    int height;            // Altura do nó
-    Value frequence;       // Frequência do nó
+    std::pair<T, Value> key; // Chave do nó
+    Node<T, Value> *left;    // Ponteiro para o filho esquerdo
+    Node<T, Value> *right;   // Ponteiro para o filho direito
+    int height;              // Altura do nó
     // Construtor do nó
-    Node(T k, unsigned int v = 1) : key(k), left(nullptr), right(nullptr), height(1), frequence(v) {}
+    Node(T k, Value v) : key({k, v}), left(nullptr), right(nullptr), height(1) {}
 };
 
 // Implementação da árvore AVL com balanceamento automático
@@ -141,8 +140,8 @@ private:
             successor->left = delete_successor(node, successor->left);
         else
         {
-            node->key = successor->key; // Substitui a chave pelo sucessor
-            node->frequence = successor->frequence;
+            node->key.first = successor->key.first; // Substitui a chave pelo sucessor
+            node->key.second = successor->key.second;
             Node<T, Value> *aux = successor->right;
             delete successor;
             return aux;
@@ -158,17 +157,17 @@ private:
             return node;
 
         // Navega pela árvore até encontrar o nó
-        if (key < node->key)
+        if (key < node->key.first)
         {
             node->left = _delete(node->left, key, value);
         }
-        else if (key > node->key)
+        else if (key > node->key.first)
         {
             node->right = _delete(node->right, key, value);
         }
-        else if (node->frequence > value)
+        else if (node->key.second > value)
         {
-            node->frequence -= value;
+            node->key.second -= value;
             return node;
         }
         else if (node->right == nullptr)
@@ -195,11 +194,11 @@ private:
         comps++; // Incrementa o contador de comparações
 
         // Navega pela árvore para encontrar a posição de inserção
-        if (compare(key, node->key))
+        if (compare(key, node->key.first))
         {
             node->left = _insert(node->left, key, value);
         }
-        else if (compare(node->key, key))
+        else if (compare(node->key.first, key))
         {
             comps++;
             node->right = _insert(node->right, key, value);
@@ -207,7 +206,6 @@ private:
         else
         {
             comps++;
-            node->frequence += value; // Incrementa a frequência se a chave já existir
             return node;
         }
 
@@ -222,17 +220,20 @@ private:
             return node;
 
         // Navega pela árvore para encontrar a chave
-        if (compare(key, node->key))
+        comps++;
+        if (compare(key, node->key.first))
         {
             node->left = _update(node->left, key, value);
         }
-        else if (compare(node->key, key))
+        else if (compare(node->key.first, key))
         {
+            comps++;
             node->right = _update(node->right, key, value);
         }
         else
         {
-            node->frequence = value; // Atualiza a frequência
+            comps++;
+            node->key.second = value; // Atualiza a frequência
         }
         return node;
     }
@@ -247,11 +248,11 @@ private:
         if constexpr (std::is_same<T, icu::UnicodeString>::value)
         {
             std::string skey;
-            node->key.toUTF8String(skey);
-            std::cout << skey << ": " << node->frequence << std::endl;
+            node->key.first.toUTF8String(skey);
+            std::cout << skey << ": " << node->key.second << std::endl;
         }
         else
-            std::cout << node->key << ": " << node->frequence << std::endl;
+            std::cout << node->key.first << ": " << node->key.second << std::endl;
         _print(node->right); // Imprime a subárvore direita
     }
 
@@ -278,11 +279,11 @@ private:
         if constexpr (std::is_same<T, icu::UnicodeString>::value)
         {
             std::string skey;
-            node->key.toUTF8String(skey);
-            std::cout << skey << " (" << node->frequence << ")" << std::endl;
+            node->key.first.toUTF8String(skey);
+            std::cout << skey << " (" << node->key.second << ")" << std::endl;
         }
         else
-            std::cout << node->key << " (" << node->frequence << ")" << std::endl;
+            std::cout << node->key.first << " (" << node->key.second << ")" << std::endl;
         if (node != nullptr && (node->left != nullptr || node->right != nullptr))
         {
             bshow(node->left, heranca + "l");
@@ -304,17 +305,26 @@ private:
     }
 
     // Função auxiliar para verificar se a árvore contém uma chave
-    bool _contains(Node<T, Value> *node, const T &key) const
+    bool _contains(Node<T, Value> *node, const T &key)
     {
         if (node == nullptr)
             return false; // Se o nó é nulo, a chave não está na árvore
-
-        if (compare(key, node->key))
+        comps++;
+        if (compare(key, node->key.first))
+        {
             return _contains(node->left, key); // Procura na subárvore esquerda se a chave é menor que a chave do nó atual
-        else if (compare(node->key, key))
+        }
+
+        else if (compare(node->key.first, key))
+        {
+            comps++;
             return _contains(node->right, key); // Procura na subárvore direita se a chave é maior que a chave do nó atual
+        }
         else
+        {
+            comps++;
             return true; // A chave foi encontrada
+        }
     }
 
 public:
@@ -338,31 +348,34 @@ public:
     }
 
     // Função para atualizar a frequência de uma chave
-    void update(T key, unsigned int value)
+    void update(T key, Value value)
     {
         root = _update(root, key, value);
     }
 
     // Função para buscar uma chave na árvore
-    T find(T key)
+    Value find(T key)
     {
         Node<T, Value> *node = root;
         while (node != nullptr)
         {
-            if (compare(key, node->key))
+            comps++;
+            if (compare(key, node->key.first))
             {
                 node = node->left;
             }
-            else if (compare(node->key, key))
+            else if (compare(node->key.first, key))
             {
+                comps++;
                 node = node->right;
             }
             else
             {
-                return node->key;
+                comps++;
+                return node->key.second;
             }
         }
-        return T(); // Retorna um objeto default se não encontrar a chave
+        return Value(); // Retorna um objeto default se não encontrar a chave
     }
 
     // Função para imprimir a árvore
@@ -381,7 +394,7 @@ public:
     }
 
     // Função que verifica se a árvore contém uma chave
-    bool contains(const T &key) const
+    bool contains(const T &key)
     {
         return _contains(root, key); // Inicia a busca a partir da raiz
     }

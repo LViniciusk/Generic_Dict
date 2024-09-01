@@ -17,18 +17,17 @@ enum Color
 };
 
 // Estrutura de um nó da árvore rubro negra
-template <typename T, typename Value = int>
+template <typename T, typename Value>
 struct RBNode
 {
-    T key;                    // Chave do nó
+    std::pair<T, Value> key;  // Chave do nó de par Chave/Valor
     RBNode<T, Value> *left;   // Ponteiro para o filho esquerdo
     RBNode<T, Value> *right;  // Ponteiro para o filho direito
     RBNode<T, Value> *parent; // Ponteiro para o nó pai
     Color color;              // Cor do nó (vermelho ou preto)
-    Value frequence;          // Frequência associada à chave
 
     // Construtor do nó
-    RBNode(T k, Value v = 1) : key(k), left(nullptr), right(nullptr), parent(nullptr), color(RED), frequence(v) {}
+    RBNode(T k, Value v) : key({k,v}), left(nullptr), right(nullptr), parent(nullptr), color(RED) {}
 };
 
 // Classe da árvore rubro negra
@@ -233,11 +232,11 @@ private:
         // Encontra o nó a ser removido
         while (z != nullptr)
         {
-            if (key == z->key)
+            if (key == z->key.first)
             {
                 break;
             }
-            else if (compare(key, z->key))
+            else if (compare(key, z->key.first))
             {
                 z = z->left;
             }
@@ -283,8 +282,8 @@ private:
         // Se y não é o nó a ser removido, mova os dados de y para z
         if (y != z)
         {
-            z->key = y->key;
-            z->frequence = y->frequence;
+            z->key.first = y->key.first;
+            z->key.second = y->key.second;
         }
 
         // Se y era preto, a árvore pode precisar de ajustes
@@ -306,12 +305,12 @@ private:
             return new RBNode<T, Value>(key, value);
         }
         comps++;
-        if (compare(key, node->key))
+        if (compare(key, node->key.first))
         {
             node->left = _insert(node->left, key, value);
             node->left->parent = node;
         }
-        else if (compare(node->key, key))
+        else if (compare(node->key.first, key))
         {
             comps++;
             node->right = _insert(node->right, key, value);
@@ -320,7 +319,6 @@ private:
         else
         {
             comps++;
-            node->frequence += value;
             return node;
         }
 
@@ -337,12 +335,12 @@ private:
         if constexpr (std::is_same<T, icu::UnicodeString>::value)
         {
             std::string skey;
-            node->key.toUTF8String(skey);
-            std::cout << skey << ": " << node->frequence << std::endl;
+            node->key.first.toUTF8String(skey);
+            std::cout << skey << ": " << node->key.second << std::endl;
         }
         else
         {
-            std::cout << node->key << ": " << node->frequence << std::endl;
+            std::cout << node->key.first << ": " << node->key.second << std::endl;
         }
         _print(node->right);
     }
@@ -366,16 +364,19 @@ private:
     {
         while (node != nullptr)
         {
-            if (compare(key, node->key))
+            comps++;
+            if (compare(key, node->key.first))
             {
                 node = node->left;
             }
-            else if (compare(node->key, key))
+            else if (compare(node->key.first, key))
             {
+                comps++;
                 node = node->right;
             }
             else
             {
+                comps++;
                 return true;
             }
         }
@@ -383,7 +384,6 @@ private:
     }
 
 public:
-
     // Construtor da árvore, inicializa os membros
     RBTree(COMPARATOR comp = COMPARATOR()) : compare(comp)
     {
@@ -411,42 +411,48 @@ public:
         RBNode<T, Value> *node = root;
         while (node != nullptr)
         {
-            if (compare(key, node->key))
+            comps++;
+            if (compare(key, node->key.first))
             {
                 node = node->left;
             }
-            else if (compare(node->key, key))
+            else if (compare(node->key.first, key))
             {
+                comps++;
                 node = node->right;
             }
             else
             {
-                node->frequence = value;
+                comps++;
+                node->key.second = value;
                 return;
             }
         }
     }
 
     // Função para encontrar uma chave na árvore
-    T find(T key)
+    Value find(T key)
     {
         RBNode<T, Value> *node = root;
         while (node != nullptr)
         {
-            if (compare(key, node->key))
+            comps++;
+            if (compare(key, node->key.first))
             {
                 node = node->left;
             }
-            else if (compare(node->key, key))
+            else if (compare(node->key.first, key))
             {
+                comps++;
                 node = node->right;
             }
             else
             {
-                return node->key;
+                comps++;
+                return node->key.second;
             }
         }
-        return T();
+        return Value();
     }
 
     // Função para imprimir a árvore em ordem

@@ -207,8 +207,7 @@ public:
             comps++;
             if (p.first == k)
             {
-                p.second += v; // Se a chave já existe, atualiza o valor
-                return true;
+                return false;
             }
         }
         (*m_table)[i].push_back(std::make_pair(k, v)); // Insere nova chave-valor
@@ -222,6 +221,7 @@ public:
         size_t i = hash_code(k);
         for (auto &p : (*m_table)[i])
         {
+            comps++;
             if (p.first == k)
             {
                 return true;
@@ -236,6 +236,7 @@ public:
         size_t i = hash_code(k);
         for (auto &p : (*m_table)[i])
         {
+            comps++;
             if (p.first == k)
             {
                 return p.second;
@@ -286,6 +287,7 @@ public:
         size_t i = hash_code(k);
         for (auto it = (*m_table)[i].begin(); it != (*m_table)[i].end(); ++it)
         {
+            comps++;
             if (it->first == k)
             {
                 it->second = v; // Atualiza o valor da chave

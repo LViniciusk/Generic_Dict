@@ -17,6 +17,38 @@ using namespace std;
 using namespace std::chrono;
 using namespace icu;
 
+// função que executa a estrutura de dados
+template <typename dicts>
+void run(dicts &dict, string filename)
+{
+    // Inicia a contagem do tempo
+    auto start = high_resolution_clock::now();
+
+    // Lê o arquivo e insere as palavras no dicionário
+    stringstream file = LoadFile("./Textos/" + filename);
+
+    std::string word;
+    while (file >> word)
+    {
+        dict.add(icu::UnicodeString::fromUTF8(
+            icu::StringPiece(word.c_str(), word.size())));
+    }
+
+    // Finaliza a contagem do tempo e calcula a duração
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+
+    // Imprime o tempo de execução
+    cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
+    cout << "Nome do arquivo: " << filename << endl;
+    cout << "Numero de palavras: " << dict.size() << endl;
+    cout << "Numero de Comparações: " << dict.comparisons() << endl;
+    cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+    cout << "Lista de palavras: " << endl
+         << endl;
+    dict.print();
+}
+
 int main(int argc, char *argv[])
 {
     // Verifica se o número de argumentos está correto
@@ -39,111 +71,31 @@ int main(int argc, char *argv[])
     cout.rdbuf(out.rdbuf());           // redireciona cout para o arquivo
 
     // Define o modo de estrutura
-    int mode_structure = std::stoi(argv[1]);
+    int mode = std::stoi(argv[1]);
 
     // Define o nome do arquivo
     string filename = argv[2];
 
     // Verifica se a estrutura fornecida é válida
-    if (mode_structure == 1) // AVL
+    if (mode == 1) // AVL
     {
         Dict<AVLTree<UnicodeString, int, u_comparator>> dict;
-
-        // Inicia a contagem do tempo
-        auto start = high_resolution_clock::now();
-
-        // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = LoadFile("./Textos/" + filename);
-        dict.add(file);
-
-        // Finaliza a contagem do tempo e calcula a duração
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-
-        // Imprime o tempo de execução
-        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
-        cout << "Nome do arquivo: " << filename << endl;
-        cout << "Numero de palavras: " << dict.size() << endl;
-        cout << "Numero de Comparações: " << dict.comparisons() << endl;
-        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl
-             << endl;
-        dict.print();
+        run(dict, filename);
     }
-    else if (mode_structure == 2) // RB
+    else if (mode == 2) // RB
     {
         Dict<RBTree<UnicodeString, int, u_comparator>> dict;
-
-        // Inicia a contagem do tempo
-        auto start = high_resolution_clock::now();
-
-        // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = LoadFile("./Textos/" + filename);
-        dict.add(file);
-
-        // Finaliza a contagem do tempo e calcula a duração
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-
-        // Imprime o tempo de execução
-        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
-        cout << "Nome do arquivo: " << filename << endl;
-        cout << "Numero de palavras: " << dict.size() << endl;
-        cout << "Numero de Comparações: " << dict.comparisons() << endl;
-        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl
-             << endl;
-        dict.print();
+        run(dict, filename);
     }
-    else if (mode_structure == 3) // Hash2
+    else if (mode == 3) // Hash2
     {
         Dict<Hash2Table<UnicodeString, int, u_comparator>> dict;
-
-        // Inicia a contagem do tempo
-        auto start = high_resolution_clock::now();
-
-        // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = LoadFile("./Textos/" + filename);
-        dict.add(file);
-
-        // Finaliza a contagem do tempo e calcula a duração
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-
-        // Imprime o tempo de execução
-        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
-        cout << "Nome do arquivo: " << filename << endl;
-        cout << "Numero de palavras: " << dict.size() << endl;
-        cout << "Numero de Comparações: " << dict.comparisons() << endl;
-        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl
-             << endl;
-        dict.print();
+        run(dict, filename);
     }
-    else if (mode_structure == 4) // Hash
+    else if (mode == 4) // Hash
     {
         Dict<HashTable<UnicodeString, int, u_comparator>> dict;
-
-        // Inicia a contagem do tempo
-        auto start = high_resolution_clock::now();
-
-        // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = LoadFile("./Textos/" + filename);
-        dict.add(file);
-
-        // Finaliza a contagem do tempo e calcula a duração
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-
-        // Imprime o tempo de execução
-        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
-        cout << "Nome do arquivo: " << filename << endl;
-        cout << "Numero de palavras: " << dict.size() << endl;
-        cout << "Numero de Comparações: " << dict.comparisons() << endl;
-        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl
-             << endl;
-        dict.print();
+        run(dict, filename);
     }
     else
     {
@@ -157,8 +109,15 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// comparações
-// rb - 15030316 - 15M - 882ms
-// avl - 24979970 - 24.9M - 1149ms
-// hash - 1263239 - 1.2M - 573ms
-// hash2 - 1313671 - 1.3M - 552ms
+// comparações ANTES 
+// AVLTree - 24979970 - 24.9M - 1149ms
+// RBTree - 15030316 - 15M - 882ms
+// Hash2Table - 1313671 - 1.3M - 552ms
+// HashTable - 1263239 - 1.2M - 573ms
+
+
+// comparações DEPOIS
+// AVLTree - 47403790 - 47.4M - 1836ms
+// RBTree - 44692755 - 44.6M - 1693ms
+// Hash2Table - 3898484 - 3.8M - 846ms
+// HashTable - 3778178 - 3.7M - 826ms

@@ -7,21 +7,19 @@
 #include "Hash.h"
 #include "Hash2.h"
 
-template <typename KeyType>
+template <typename EDType>
 class Dict
 {
 private:
-    KeyType _dict;
+    EDType _dict;
 
 public:
-    void add(std::stringstream &file)
+    void add(icu::UnicodeString key, unsigned int value = 1)
     {
-        std::string word;
-        while (file >> word)
-        {
-            _dict.insert(icu::UnicodeString::fromUTF8(
-                icu::StringPiece(word.c_str(), word.size())));
-        }
+        if(!_dict.contains(key))
+            _dict.insert(key, 1);
+        else
+            _dict.update(key, _dict.find(key) + value);
     }
 
     void print()

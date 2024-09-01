@@ -197,8 +197,7 @@ public:
             else if (m_table[index].key == k)
             {
                 comps++;
-                m_table[index].value += v; // Se a chave já existe, atualiza o valor
-                return true;
+                return false;
             }
             comps++;
         } while (i < m_table_size);
@@ -216,6 +215,7 @@ public:
             index = hash_code(k, i++);
             if (m_table[index].state == EMPTY)
                 return false;
+            comps++;
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
                 return true;
         } while (i < m_table_size);
@@ -230,6 +230,7 @@ public:
         do
         {
             index = hash_code(k, i++);
+            comps++;
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
                 return m_table[index].value;
         } while (i < m_table_size);
@@ -292,6 +293,7 @@ public:
         do
         {
             index = hash_code(k, i++);
+            comps++;
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
                 m_table[index].value = v; // Atualiza o valor da chave
