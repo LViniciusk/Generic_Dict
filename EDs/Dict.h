@@ -39,6 +39,21 @@ public:
         _dict.update(key, value);
     }
 
+    void find(icu::UnicodeString key)
+    {
+        _dict.find(key);
+    }
+
+    void clear()
+    {
+        _dict.clear();
+    }
+
+    bool contains(icu::UnicodeString key)
+    {
+        return _dict.contains(key);
+    }
+
     size_t size()
     {
         return _dict.size();

@@ -9,45 +9,52 @@
 #include <unicode/coll.h>
 #include "extras.h"
 
-template <typename T>
+// Estrutura de nó da árvore AVL
+template <typename T, typename Value = int>
 struct Node
 {
-    T key;
-    Node<T> *left;
-    Node<T> *right;
-    int height;
-    int frequence;
+    T key;                 // Chave do nó
+    Node<T, Value> *left;  // Ponteiro para o filho esquerdo
+    Node<T, Value> *right; // Ponteiro para o filho direito
+    int height;            // Altura do nó
+    Value frequence;       // Frequência do nó
+    // Construtor do nó
     Node(T k, unsigned int v = 1) : key(k), left(nullptr), right(nullptr), height(1), frequence(v) {}
 };
 
-template <typename T, typename COMPARATOR = comparator<T>>
+// Implementação da árvore AVL com balanceamento automático
+template <typename T, typename Value = int, typename COMPARATOR = comparator<T>>
 class AVLTree
 {
 private:
-    Node<T> *root = nullptr;
-    COMPARATOR compare;
-    unsigned int comps = 0;
-    unsigned int _size = 0;
+    Node<T, Value> *root = nullptr; // Raiz da árvore
+    COMPARATOR compare;             // Função de comparação personalizada
+    unsigned int comps = 0;         // Contador de comparações
+    unsigned int _size = 0;         // Número de elementos na árvore
 
-    int height(Node<T> *node)
+    // Função para obter a altura de um nó
+    int height(Node<T, Value> *node)
     {
         return (node == nullptr) ? 0 : node->height;
     }
 
-    int balance(Node<T> *node)
+    // Função para calcular o fator de balanceamento de um nó
+    int balance(Node<T, Value> *node)
     {
         return (node == nullptr) ? 0 : height(node->right) - height(node->left);
     }
 
+    // Função auxiliar para determinar o valor máximo entre dois inteiros
     int max(int a, int b)
     {
         return (a > b) ? a : b;
     }
 
-    Node<T> *rightRotate(Node<T> *x)
+    // Rotação à direita
+    Node<T, Value> *rightRotate(Node<T, Value> *x)
     {
-        Node<T> *y = x->left;
-        Node<T> *z = y->right;
+        Node<T, Value> *y = x->left;
+        Node<T, Value> *z = y->right;
         x->left = z;
         y->right = x;
         x->height = max(height(x->left), height(x->right)) + 1;
@@ -55,10 +62,11 @@ private:
         return y;
     }
 
-    Node<T> *leftRotate(Node<T> *x)
+    // Rotação à esquerda
+    Node<T, Value> *leftRotate(Node<T, Value> *x)
     {
-        Node<T> *y = x->right;
-        Node<T> *z = y->left;
+        Node<T, Value> *y = x->right;
+        Node<T, Value> *z = y->left;
         x->right = z;
         y->left = x;
         x->height = max(height(x->left), height(x->right)) + 1;
@@ -66,11 +74,14 @@ private:
         return y;
     }
 
-    Node<T> *fixupInsert(Node<T> *node)
+    // Função para corrigir o balanceamento após uma inserção
+    Node<T, Value> *fixupInsert(Node<T, Value> *node)
     {
         node->height = max(height(node->left), height(node->right)) + 1;
         int bal = balance(node);
-        comps++;
+        comps++; // Incrementa o contador de comparações
+
+        // Realiza rotações conforme o balanceamento do nó
         if (bal > 1 && balance(node->right) >= 0)
         {
             return leftRotate(node);
@@ -83,23 +94,25 @@ private:
         }
         else if (bal < -1 && balance(node->left) <= 0)
         {
-            comps+=2;
+            comps += 2;
             return rightRotate(node);
         }
         else if (bal < -1 && balance(node->left) > 0)
         {
-            comps+=3;
+            comps += 3;
             node->left = leftRotate(node->left);
             return rightRotate(node);
         }
         return node;
     }
 
-    Node<T> *fixupDelete(Node<T> *node)
+    // Função para corrigir o balanceamento após uma remoção
+    Node<T, Value> *fixupDelete(Node<T, Value> *node)
     {
         node->height = max(height(node->left), height(node->right)) + 1;
         int bal = balance(node);
 
+        // Realiza rotações conforme o balanceamento do nó
         if (bal > 1 && balance(node->right) >= 0)
         {
             return leftRotate(node);
@@ -121,26 +134,30 @@ private:
         return node;
     }
 
-    Node<T> *delete_successor(Node<T> *node, Node<T> *successor)
+    // Função para encontrar e deletar o sucessor de um nó
+    Node<T, Value> *delete_successor(Node<T, Value> *node, Node<T, Value> *successor)
     {
         if (successor->left != nullptr)
             successor->left = delete_successor(node, successor->left);
         else
         {
-            node->key = successor->key;
+            node->key = successor->key; // Substitui a chave pelo sucessor
             node->frequence = successor->frequence;
-            Node<T> *aux = successor->right;
+            Node<T, Value> *aux = successor->right;
             delete successor;
             return aux;
         }
-        successor = fixupDelete(successor);
+        successor = fixupDelete(successor); // Corrige o balanceamento do sucessor
         return successor;
     }
 
-    Node<T> *_delete(Node<T> *node, T key, unsigned int value = 1)
+    // Função recursiva para remover um nó da árvore
+    Node<T, Value> *_delete(Node<T, Value> *node, T key, unsigned int value = 1)
     {
         if (node == nullptr)
             return node;
+
+        // Navega pela árvore até encontrar o nó
         if (key < node->key)
         {
             node->left = _delete(node->left, key, value);
@@ -156,24 +173,28 @@ private:
         }
         else if (node->right == nullptr)
         {
-            Node<T> *child = node->left;
+            Node<T, Value> *child = node->left;
             delete node;
             return child;
         }
         else
             node->right = delete_successor(node, node->right);
-        node = fixupDelete(node);
+
+        node = fixupDelete(node); // Corrige o balanceamento do nó removido
         return node;
     }
 
-    Node<T> *_insert(Node<T> *node, T key, unsigned int value = 1)
+    // Função recursiva para inserir um novo nó na árvore
+    Node<T, Value> *_insert(Node<T, Value> *node, T key, unsigned int value = 1)
     {
         if (node == nullptr)
         {
             _size++;
-            return new Node<T>(key, value);
+            return new Node<T, Value>(key, value);
         }
-        comps++;
+        comps++; // Incrementa o contador de comparações
+
+        // Navega pela árvore para encontrar a posição de inserção
         if (compare(key, node->key))
         {
             node->left = _insert(node->left, key, value);
@@ -186,19 +207,21 @@ private:
         else
         {
             comps++;
-            node->frequence += value;
+            node->frequence += value; // Incrementa a frequência se a chave já existir
             return node;
         }
 
-        node = fixupInsert(node);
-
+        node = fixupInsert(node); // Corrige o balanceamento após a inserção
         return node;
     }
 
-    Node<T> *_update(Node<T> *node, T key, unsigned int value)
+    // Função para atualizar a frequência de um nó
+    Node<T, Value> *_update(Node<T, Value> *node, T key, unsigned int value)
     {
         if (node == nullptr)
             return node;
+
+        // Navega pela árvore para encontrar a chave
         if (compare(key, node->key))
         {
             node->left = _update(node->left, key, value);
@@ -209,30 +232,31 @@ private:
         }
         else
         {
-            node->frequence = value;
+            node->frequence = value; // Atualiza a frequência
         }
         return node;
     }
 
-    void _print(Node<T> *node) const
+    // Função recursiva para imprimir a árvore em ordem (in-order)
+    void _print(Node<T, Value> *node) const
     {
         if (node == nullptr)
             return;
 
-        _print(node->left);
+        _print(node->left); // Imprime a subárvore esquerda
         if constexpr (std::is_same<T, icu::UnicodeString>::value)
         {
             std::string skey;
             node->key.toUTF8String(skey);
-            std::cout << skey << " (" << node->frequence << ")" << std::endl;
+            std::cout << skey << ": " << node->frequence << std::endl;
         }
         else
-            std::cout << node->key << " (" << node->frequence << ")" << std::endl;
-        _print(node->right);
+            std::cout << node->key << ": " << node->frequence << std::endl;
+        _print(node->right); // Imprime a subárvore direita
     }
 
-    // Imprime a árvore na tela
-    void bshow(Node<T> *node, std::string heranca) const
+    // Função para imprimir a árvore visualmente
+    void bshow(Node<T, Value> *node, std::string heranca) const
     {
         if (node != nullptr && (node->left != nullptr || node->right != nullptr))
         {
@@ -265,31 +289,64 @@ private:
         }
     }
 
+    // Função auxiliar para limpar a árvore
+    void _clear(Node<T, Value> *node)
+    {
+        if (node == nullptr)
+            return;
+
+        // Primeiro, limpe as subárvores à esquerda e à direita
+        _clear(node->left);
+        _clear(node->right);
+
+        // Depois de limpar as subárvores, delete o nó atual
+        delete node;
+    }
+
+    // Função auxiliar para verificar se a árvore contém uma chave
+    bool _contains(Node<T, Value> *node, const T &key) const
+    {
+        if (node == nullptr)
+            return false; // Se o nó é nulo, a chave não está na árvore
+
+        if (compare(key, node->key))
+            return _contains(node->left, key); // Procura na subárvore esquerda se a chave é menor que a chave do nó atual
+        else if (compare(node->key, key))
+            return _contains(node->right, key); // Procura na subárvore direita se a chave é maior que a chave do nó atual
+        else
+            return true; // A chave foi encontrada
+    }
+
 public:
+    // Construtor da árvore AVL
     AVLTree(COMPARATOR comp = COMPARATOR()) : compare(comp)
     {
         root = nullptr;
         _size = 0;
     }
 
+    // Função para inserir uma chave na árvore
     void insert(T key, unsigned int value = 1)
     {
         root = _insert(root, key, value);
     }
 
+    // Função para remover uma chave da árvore
     void remove(T key, unsigned int value = 1)
     {
         root = _delete(root, key, value);
     }
 
+    // Função para atualizar a frequência de uma chave
     void update(T key, unsigned int value)
     {
         root = _update(root, key, value);
     }
 
+    // Função para buscar uma chave na árvore
     T find(T key)
     {
-        Node<T> *node = root;
+        Node<T, Value> *node = root;
         while (node != nullptr)
         {
             if (compare(key, node->key))
@@ -305,20 +362,37 @@ public:
                 return node->key;
             }
         }
-        return T();
+        return T(); // Retorna um objeto default se não encontrar a chave
     }
 
+    // Função para imprimir a árvore
     void print() const
     {
-        // bshow(root, "");
         _print(root);
     }
 
+    // Função para limpar a árvore
+    void clear()
+    {
+        _clear(root);
+
+        root = nullptr;
+        _size = 0;
+    }
+
+    // Função que verifica se a árvore contém uma chave
+    bool contains(const T &key) const
+    {
+        return _contains(root, key); // Inicia a busca a partir da raiz
+    }
+
+    // Função para retornar o número de comparações feitas
     size_t comparisons()
     {
         return comps;
     }
 
+    // Função para retornar o número de elementos na árvore
     size_t size() const
     {
         return _size;

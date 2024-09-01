@@ -1,7 +1,3 @@
-# Generic_Dict
- Trabalho EDA
-
- 
 -- How to use -- 
 
     <program_name> <structure_mode> <filename> 

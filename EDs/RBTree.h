@@ -9,37 +9,42 @@
 #include <unicode/coll.h>
 #include "extras.h"
 
-// Definição das cores dos nós
+// Definição das cores dos nós em uma árvore rubro negra
 enum Color
 {
     RED,
     BLACK
 };
 
-template <typename T>
+// Estrutura de um nó da árvore rubro negra
+template <typename T, typename Value = int>
 struct RBNode
 {
-    T key;
-    RBNode<T> *left;
-    RBNode<T> *right;
-    RBNode<T> *parent;
-    Color color;
-    int frequence;
-    RBNode(T k, unsigned int v = 1) : key(k), left(nullptr), right(nullptr), parent(nullptr), color(RED), frequence(v) {}
+    T key;                    // Chave do nó
+    RBNode<T, Value> *left;   // Ponteiro para o filho esquerdo
+    RBNode<T, Value> *right;  // Ponteiro para o filho direito
+    RBNode<T, Value> *parent; // Ponteiro para o nó pai
+    Color color;              // Cor do nó (vermelho ou preto)
+    Value frequence;          // Frequência associada à chave
+
+    // Construtor do nó
+    RBNode(T k, Value v = 1) : key(k), left(nullptr), right(nullptr), parent(nullptr), color(RED), frequence(v) {}
 };
 
-template <typename T, typename COMPARATOR = comparator<T>>
+// Classe da árvore rubro negra
+template <typename T, typename Value = int, typename COMPARATOR = comparator<T>>
 class RBTree
 {
 private:
-    RBNode<T> *root = nullptr;
-    COMPARATOR compare;
-    unsigned int comps = 0;
-    unsigned int _size = 0;
+    RBNode<T, Value> *root = nullptr; // Raiz da árvore
+    COMPARATOR compare;               // Função de comparação
+    unsigned int comps = 0;           // Contador de comparações
+    unsigned int _size = 0;           // Tamanho da árvore (número de nós)
 
-    void leftRotate(RBNode<T> *x)
+    // Rotação à esquerda para manutenção da propriedade da árvore rubro negra
+    void leftRotate(RBNode<T, Value> *x)
     {
-        RBNode<T> *y = x->right;
+        RBNode<T, Value> *y = x->right;
         x->right = y->left;
         if (y->left != nullptr)
         {
@@ -62,9 +67,10 @@ private:
         x->parent = y;
     }
 
-    void rightRotate(RBNode<T> *x)
+    // Rotação à direita para manutenção da propriedade da árvore rubro negra
+    void rightRotate(RBNode<T, Value> *x)
     {
-        RBNode<T> *y = x->left;
+        RBNode<T, Value> *y = x->left;
         x->left = y->right;
         if (y->right != nullptr)
         {
@@ -87,13 +93,14 @@ private:
         x->parent = y;
     }
 
-    void fixupInsert(RBNode<T> *z)
+    // Ajuste da árvore após a inserção para manter as propriedades rubro negra
+    void fixupInsert(RBNode<T, Value> *z)
     {
         while (z->parent != nullptr && z->parent->color == RED)
         {
             if (z->parent == z->parent->parent->left)
             {
-                RBNode<T> *y = z->parent->parent->right;
+                RBNode<T, Value> *y = z->parent->parent->right;
                 if (y != nullptr && y->color == RED)
                 {
                     z->parent->color = BLACK;
@@ -115,7 +122,7 @@ private:
             }
             else
             {
-                RBNode<T> *y = z->parent->parent->left;
+                RBNode<T, Value> *y = z->parent->parent->left;
                 if (y != nullptr && y->color == RED)
                 {
                     z->parent->color = BLACK;
@@ -139,13 +146,14 @@ private:
         root->color = BLACK;
     }
 
-    void fixupDelete(RBNode<T> *x)
+    // Ajuste da árvore após a remoção para manter as propriedades rubro negra
+    void fixupDelete(RBNode<T, Value> *x)
     {
         while (x != root && x->color == BLACK)
         {
             if (x == x->parent->left)
             {
-                RBNode<T> *w = x->parent->right;
+                RBNode<T, Value> *w = x->parent->right;
                 if (w->color == RED)
                 {
                     w->color = BLACK;
@@ -179,7 +187,7 @@ private:
             }
             else
             {
-                RBNode<T> *w = x->parent->left;
+                RBNode<T, Value> *w = x->parent->left;
                 if (w->color == RED)
                 {
                     w->color = BLACK;
@@ -215,12 +223,14 @@ private:
         x->color = BLACK;
     }
 
-    RBNode<T> *_delete(RBNode<T> *node, T key, unsigned int value = 1)
+    // Função auxiliar para remoção de um nó com uma determinada chave
+    RBNode<T, Value> *_delete(RBNode<T, Value> *node, T key, unsigned int value = 1)
     {
-        RBNode<T> *z = root;
-        RBNode<T> *y = nullptr;
-        RBNode<T> *x = nullptr;
+        RBNode<T, Value> *z = root;
+        RBNode<T, Value> *y = nullptr;
+        RBNode<T, Value> *x = nullptr;
 
+        // Encontra o nó a ser removido
         while (z != nullptr)
         {
             if (key == z->key)
@@ -240,22 +250,26 @@ private:
         if (z == nullptr)
             return root;
 
+        // Se o nó encontrado tem no máximo um filho, y será z
         if (z->left == nullptr || z->right == nullptr)
         {
             y = z;
         }
         else
         {
+            // Caso contrário, encontre o sucessor de z
             y = z->right;
             while (y->left != nullptr)
                 y = y->left;
         }
 
+        // x é o filho de y
         if (y->left != nullptr)
             x = y->left;
         else
             x = y->right;
 
+        // Reconecta o pai de y ao filho de y
         if (x != nullptr)
             x->parent = y->parent;
 
@@ -266,26 +280,30 @@ private:
         else
             y->parent->right = x;
 
+        // Se y não é o nó a ser removido, mova os dados de y para z
         if (y != z)
         {
             z->key = y->key;
             z->frequence = y->frequence;
         }
 
+        // Se y era preto, a árvore pode precisar de ajustes
         if (y->color == BLACK && x != nullptr)
             fixupDelete(x);
 
+        // Libera a memória de y e atualiza o tamanho da árvore
         delete y;
         _size--;
         return root;
     }
 
-    RBNode<T> *_insert(RBNode<T> *node, T key, unsigned int value = 1)
+    // Função auxiliar para inserção de um novo nó
+    RBNode<T, Value> *_insert(RBNode<T, Value> *node, T key, unsigned int value = 1)
     {
         if (node == nullptr)
         {
             _size++;
-            return new RBNode<T>(key, value);
+            return new RBNode<T, Value>(key, value);
         }
         comps++;
         if (compare(key, node->key))
@@ -309,7 +327,8 @@ private:
         return node;
     }
 
-    void _print(RBNode<T> *node) const
+    // Função auxiliar para imprimir a árvore em ordem
+    void _print(RBNode<T, Value> *node) const
     {
         if (node == nullptr)
             return;
@@ -319,37 +338,77 @@ private:
         {
             std::string skey;
             node->key.toUTF8String(skey);
-            std::cout << skey << " (" << node->frequence << ") [" << (node->color == RED ? "R" : "B") << "]" << std::endl;
+            std::cout << skey << ": " << node->frequence << std::endl;
         }
         else
         {
-            std::cout << node->key << " (" << node->frequence << ") [" << (node->color == RED ? "R" : "B") << "]" << std::endl;
+            std::cout << node->key << ": " << node->frequence << std::endl;
         }
         _print(node->right);
     }
 
+    // Função auxiliar para limpar a árvore
+    void _clear(RBNode<T, Value> *node)
+    {
+        if (node == nullptr)
+            return;
+
+        // Primeiro, limpe as subárvores à esquerda e à direita
+        _clear(node->left);
+        _clear(node->right);
+
+        // Depois de limpar as subárvores, delete o nó atual
+        delete node;
+    }
+
+    // Função auxiliar para verificar se a árvore contém uma chave
+    bool _contains(RBNode<T, Value> *node, T key)
+    {
+        while (node != nullptr)
+        {
+            if (compare(key, node->key))
+            {
+                node = node->left;
+            }
+            else if (compare(node->key, key))
+            {
+                node = node->right;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 public:
+
+    // Construtor da árvore, inicializa os membros
     RBTree(COMPARATOR comp = COMPARATOR()) : compare(comp)
     {
         root = nullptr;
         _size = 0;
     }
 
+    // Função para inserir um nó na árvore
     void insert(T key, unsigned int value = 1)
     {
-        RBNode<T> *newNode = _insert(root, key, value);
+        RBNode<T, Value> *newNode = _insert(root, key, value);
         root = newNode;
         fixupInsert(newNode);
     }
 
+    // Função para remover um nó da árvore
     void remove(T key, unsigned int value = 1)
     {
         root = _delete(root, key, value);
     }
 
+    // Função para atualizar o valor associado a uma chave na árvore
     void update(T key, unsigned int value)
     {
-        RBNode<T> *node = root;
+        RBNode<T, Value> *node = root;
         while (node != nullptr)
         {
             if (compare(key, node->key))
@@ -368,9 +427,10 @@ public:
         }
     }
 
+    // Função para encontrar uma chave na árvore
     T find(T key)
     {
-        RBNode<T> *node = root;
+        RBNode<T, Value> *node = root;
         while (node != nullptr)
         {
             if (compare(key, node->key))
@@ -389,16 +449,35 @@ public:
         return T();
     }
 
+    // Função para imprimir a árvore em ordem
     void print() const
     {
         _print(root);
     }
 
+    // Função para limpar a árvore
+    void clear()
+    {
+        _clear(root);
+
+        // Após limpar, defina a raiz como nullptr e o tamanho da árvore como 0
+        root = nullptr;
+        _size = 0;
+    }
+
+    // Função para verificar se a árvore contém uma chave
+    bool contains(T key)
+    {
+        return _contains(root, key);
+    }
+
+    // Retorna o número de comparações realizadas
     size_t comparisons()
     {
         return comps;
     }
 
+    // Retorna o tamanho da árvore (número de nós)
     size_t size() const
     {
         return _size;

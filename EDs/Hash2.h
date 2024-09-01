@@ -12,29 +12,40 @@
 #include <unicode/coll.h>
 #include "extras.h"
 
+// Template de classe Hash2Table com parâmetros genéricos para a chave (Key), valor (Value),
+// comparador (COMPARATOR) e função de hash (Hash)
 template <typename Key, typename Value = int, typename COMPARATOR = comparator<Key>, typename Hash = std::hash<Key>>
-class HashTable2
+class Hash2Table
 {
 private:
-    enum EntryState { EMPTY, OCCUPIED, DELETED };
+    // Enumeração que define o estado de uma entrada na tabela de hash
+    enum EntryState
+    {
+        EMPTY,
+        OCCUPIED,
+        DELETED
+    };
 
-    struct Entry {
+    // Estrutura que representa uma entrada na tabela de hash
+    struct Entry
+    {
         Key key;
         Value value;
         EntryState state;
 
-        Entry() : state(EMPTY) {}
+        Entry() : state(EMPTY) {} // Construtor que inicializa a entrada como vazia
     };
 
-    size_t m_number_of_elements;
-    size_t m_table_size;
-    std::vector<Entry> m_table;
-    float m_load_factor;
-    float m_max_load_factor;
-    Hash m_hashing;
-    unsigned int comps = 0;
-    COMPARATOR compare;
+    size_t m_number_of_elements; // Número de elementos inseridos na tabela
+    size_t m_table_size;         // Tamanho da tabela de hash (número de buckets)
+    std::vector<Entry> m_table;  // Vetor que representa a tabela de hash
+    float m_load_factor;         // Fator de carga atual da tabela (número de elementos / tamanho da tabela)
+    float m_max_load_factor;     // Fator de carga máximo permitido antes de rehashing
+    Hash m_hashing;              // Função de hash
+    unsigned int comps = 0;      // Contador de comparações realizadas
+    COMPARATOR compare;          // Comparador para ordenar os elementos
 
+    // Função privada que retorna o próximo número primo maior ou igual a x
     size_t get_next_prime(size_t x)
     {
         if (x <= 2)
@@ -57,16 +68,19 @@ private:
         return x - 2;
     }
 
+    // Função privada que calcula o código de hash para uma chave e um índice de tentativa (para resolução de colisões)
     size_t hash_code(const Key &k, size_t i) const
     {
         return (m_hashing(k) + i) % m_table_size;
     }
 
+    // Função privada que imprime os elementos da tabela de hash de forma ordenada
     void ordered_print()
     {
         std::vector<std::pair<Key, Value>> elements;
-        elements.reserve(m_number_of_elements);
+        elements.reserve(m_number_of_elements); // Reserva espaço para todos os elementos
 
+        // Coleta todos os elementos ocupados da tabela de hash
         for (size_t i = 0; i < m_table_size; ++i)
         {
             if (m_table[i].state == OCCUPIED)
@@ -75,11 +89,11 @@ private:
             }
         }
 
+        // Ordena os elementos usando o comparador fornecido
         std::sort(elements.begin(), elements.end(), [this](const std::pair<Key, Value> &a, const std::pair<Key, Value> &b)
-        {
-            return compare(a.first, b.first);
-        });
+                  { return compare(a.first, b.first); });
 
+        // Imprime os elementos ordenados
         for (const auto &p : elements)
         {
             if constexpr (std::is_same<Key, icu::UnicodeString>::value)
@@ -97,59 +111,70 @@ private:
     }
 
 public:
-    HashTable2(const HashTable2 &t) = delete;
-    HashTable2 &operator=(const HashTable2 &t) = delete;
+    // Desabilita a cópia da tabela hash
+    Hash2Table(const Hash2Table &t) = delete;
+    Hash2Table &operator=(const Hash2Table &t) = delete;
 
-    HashTable2(size_t tableSize = 19, const Hash &hf = Hash(), COMPARATOR comp = COMPARATOR() )
+    // Construtor que inicializa a tabela de hash com um tamanho inicial e outros parâmetros opcionais
+    Hash2Table(size_t tableSize = 19, const Hash &hf = Hash(), COMPARATOR comp = COMPARATOR())
     {
         compare = comp;
         m_number_of_elements = 0;
         m_table_size = tableSize;
-        m_table.resize(m_table_size);
+        m_table.resize(m_table_size); // Redimensiona o vetor de entradas para o tamanho inicial
         m_load_factor = 0.75;
         m_max_load_factor = 1.0;
         m_hashing = hf;
     }
 
+    // Retorna o número de elementos na tabela
     size_t size() const
     {
         return m_number_of_elements;
     }
 
+    // Verifica se a tabela está vazia
     bool empty() const
     {
         return m_number_of_elements == 0;
     }
 
+    // Retorna o número de buckets na tabela
     size_t bucket_count() const
     {
         return m_table_size;
     }
 
+    // Limpa a tabela de hash, removendo todos os elementos
     void clear()
     {
         m_table.clear();
-        m_table.resize(m_table_size);
+        m_table.resize(m_table_size); // Redimensiona a tabela para o tamanho inicial
         m_number_of_elements = 0;
     }
 
+    // Retorna o fator de carga atual
     float load_factor() const
     {
         return static_cast<float>(m_number_of_elements) / m_table_size;
     }
 
+    // Retorna o fator de carga máximo
     float max_load_factor() const
     {
         return m_max_load_factor;
     }
 
-    ~HashTable2()
+    // Destrutor que limpa a tabela
+    ~Hash2Table()
     {
         clear();
     }
 
+    // Insere uma chave e um valor na tabela de hash, realiza rehash se necessário
     bool insert(const Key &k, const Value &v = 1)
     {
+        // Verifica se o fator de carga ultrapassou o limite e realiza rehash se necessário
         if (load_factor() > m_load_factor)
         {
             rehash(2 * m_table_size);
@@ -162,6 +187,7 @@ public:
             index = hash_code(k, i++);
             if (m_table[index].state == EMPTY || m_table[index].state == DELETED)
             {
+                // Insere nova chave-valor na posição encontrada
                 m_table[index].key = k;
                 m_table[index].value = v;
                 m_table[index].state = OCCUPIED;
@@ -171,15 +197,16 @@ public:
             else if (m_table[index].key == k)
             {
                 comps++;
-                m_table[index].value += v;
+                m_table[index].value += v; // Se a chave já existe, atualiza o valor
                 return true;
             }
             comps++;
         } while (i < m_table_size);
 
-        return false;
+        return false; // Retorna falso se não conseguir inserir (caso de tabela cheia)
     }
 
+    // Verifica se uma chave está presente na tabela
     bool contains(const Key &k)
     {
         size_t i = 0;
@@ -195,7 +222,8 @@ public:
         return false;
     }
 
-    Value &at(const Key &k)
+    // Busca o valor associado a uma chave na tabela
+    Value &find(const Key &k)
     {
         size_t i = 0;
         size_t index;
@@ -205,15 +233,16 @@ public:
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
                 return m_table[index].value;
         } while (i < m_table_size);
-        throw std::out_of_range("Key not found");
+        throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 
+    // Reorganiza a tabela de hash com um novo tamanho
     void rehash(size_t m)
     {
         if (m <= m_table_size)
             return;
 
-        size_t new_size = get_next_prime(m);
+        size_t new_size = get_next_prime(m); // Obtém o próximo primo para o novo tamanho
         std::vector<Entry> new_table(new_size);
 
         for (size_t i = 0; i < m_table_size; i++)
@@ -224,17 +253,18 @@ public:
                 size_t index;
                 do
                 {
-                    index = (m_hashing(m_table[i].key) + j++) % new_size;
+                    index = (m_hashing(m_table[i].key) + j++) % new_size; // Recalcula o índice para a nova tabela
                 } while (new_table[index].state == OCCUPIED);
 
-                new_table[index] = m_table[i];
+                new_table[index] = m_table[i]; // Move a entrada para a nova tabela
             }
         }
 
-        m_table = std::move(new_table);
+        m_table = std::move(new_table); // Substitui a tabela antiga pela nova
         m_table_size = new_size;
     }
 
+    // Remove um elemento da tabela com base na chave
     bool remove(const Key &k)
     {
         size_t i = 0;
@@ -246,7 +276,7 @@ public:
                 return false;
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
-                m_table[index].state = DELETED;
+                m_table[index].state = DELETED; // Marca a entrada como deletada
                 m_number_of_elements--;
                 return true;
             }
@@ -254,6 +284,7 @@ public:
         return false;
     }
 
+    // Atualiza o valor associado a uma chave na tabela
     bool update(const Key &k, const Value &v)
     {
         size_t i = 0;
@@ -263,23 +294,26 @@ public:
             index = hash_code(k, i++);
             if (m_table[index].state == OCCUPIED && m_table[index].key == k)
             {
-                m_table[index].value = v;
+                m_table[index].value = v; // Atualiza o valor da chave
                 return true;
             }
         } while (i < m_table_size);
         return false;
     }
 
+    // Imprime a tabela (por padrão, imprime de forma ordenada)
     void print()
     {
         ordered_print();
     }
 
+    // Retorna o número de comparações realizadas
     size_t comparisons()
     {
         return comps;
     }
 
+    // Garante que a tabela tenha espaço suficiente para um certo número de elementos
     void reserve(size_t n)
     {
         if (n > m_table_size * m_load_factor)
@@ -288,6 +322,7 @@ public:
         }
     }
 
+    // Define o fator de carga máximo e ajusta o tamanho da tabela se necessário
     void load_factor(float lf)
     {
         if (lf <= 0 || lf > m_max_load_factor)
@@ -298,6 +333,7 @@ public:
         reserve(m_number_of_elements);
     }
 
+    // Operador de índice para acessar ou criar elementos na tabela
     Value &operator[](const Key &k)
     {
         size_t i = 0;
@@ -321,6 +357,7 @@ public:
         throw std::out_of_range("Key not found");
     }
 
+    // Operador de índice const para acessar elementos na tabela
     const Value &operator[](const Key &k) const
     {
         size_t i = 0;
@@ -333,7 +370,7 @@ public:
                 return m_table[index].value;
             }
         } while (i < m_table_size);
-        throw std::out_of_range("Key not found");
+        throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 };
 

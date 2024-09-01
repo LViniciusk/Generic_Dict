@@ -11,73 +11,61 @@
 using namespace std;
 using namespace icu;
 
-void format_text(UnicodeString &text)
-{
-    text.toLower();
-
-    for (int i = 0; i < text.length(); i++)
-    {
-
-        UChar character = text[i];
-
-        if (!u_isalpha(character))
-        {
-
-            bool is_hyphen_between_words =
-                (character == '-') && (i > 0 && u_isalpha(text[i - 1])) &&
-                (i < text.length() - 1 && u_isalpha(text[i + 1]));
-
-            if (!is_hyphen_between_words)
-            {
-                text.replace(i, 1, ' ');
-            }
-        }
-    }
-}
-
-stringstream read_file(const string &file_path)
-{
-    // Abre o arquivo
-    ifstream input_file(file_path, ios::binary);
-    if (!input_file.is_open())
-    {
-        cerr << "Error: Could not open file " << file_path << endl;
-        exit(1);
-    }
-
-    string file_content((istreambuf_iterator<char>(input_file)),
-                        istreambuf_iterator<char>());
-    UnicodeString unicode_content =
-        UnicodeString::fromUTF8(StringPiece(file_content));
-
-    format_text(unicode_content);
-
-    string processed_content;
-    unicode_content.toUTF8String(processed_content);
-
-    return stringstream(processed_content);
-}
-
+// Função que retorna o tipo da estrutura de dados
 string TypeName(string type)
 {
-    if (type == "4DictI9HashTableIN6icu_7513UnicodeStringEi12u_comparatorSt4hashIS2_EEE")
+    if (type.find("HashTable") != string::npos)
         return "HashTable Separate Chaining";
-    else if (type == "4DictI7AVLTreeIN6icu_7513UnicodeStringE12u_comparatorEE")
+    else if (type.find("AVLTree") != string::npos)
         return "AVLTree";
-    else if (type == "4DictI6RBTreeIN6icu_7513UnicodeStringE12u_comparatorEE")
+    else if (type.find("RBTree") != string::npos)
         return "RBTree";
-    else if (type == "4DictI10HashTable2IN6icu_7513UnicodeStringEi12u_comparatorSt4hashIS2_EEE")
+    else if (type.find("Hash2Table") != string::npos)
         return "HashTable Open Addressing";
     else
         return "Unknown";
 }
 
-void display_usage(const char *program_name) {
-    cerr << endl << "Uso: " << " <modo_estrutura> <arquivo(deve estar na pasta Textos)>" << endl
-         << "Modos de estrutura suportados: "<< endl << "1 = dict_avl" << endl << "2 = dict_rb" << endl << "3 = dict_hash_addressing" << endl <<  "4 = dict_hash_chaining" << endl;
+// Função que normaliza um texto Unicode, convertendo para minúsculas e substituindo caracteres não alfabéticos por espaços
+void Normalize(UnicodeString &text)
+{
+    text.toLower(); // Converte todo o texto para minúsculas
+
+    for (int i = 0; i < text.length(); ++i)
+    {
+        UChar c = text[i];
+        // Verifica se o caractere não é uma letra
+        if (!u_isalpha(c))
+        {
+            // Verifica se o caractere é um hífen entre duas letras, caso sim, mantém o hífen
+            bool vHifen = (c == '-') && (i > 0 && i < text.length() - 1) && u_isalpha(text[i - 1]) && u_isalpha(text[i + 1]);
+
+            if (!vHifen)
+            {
+                text.setCharAt(i, ' '); // Substitui o caractere por um espaço
+            }
+        }
+    }
 }
 
+// Função que carrega o conteúdo de um arquivo e retorna como um stringstream após normalização
+stringstream LoadFile(const string &path)
+{
+    ifstream file(path, ios::binary); // Abre o arquivo em modo binário
+    if (!file.is_open())
+    {
+        cerr << "Error: Could not open file " << path << endl;
+        exit(EXIT_FAILURE); // Sai do programa em caso de erro na abertura do arquivo
+    }
 
-bool is_valid_structure(const int &mode_structure) {
-    return mode_structure >= 1 && mode_structure <= 4;
+    // Carrega o conteúdo do arquivo em uma string
+    string fdata((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+
+    // Converte a string carregada para UnicodeString, normaliza e retorna como stringstream
+    UnicodeString udata = UnicodeString::fromUTF8(fdata); // Converte para UnicodeString
+    Normalize(udata);                                     // Normaliza o texto
+
+    string normalizedText;
+    udata.toUTF8String(normalizedText);  // Converte de volta para string UTF-8
+    return stringstream(normalizedText); // Retorna um stringstream com o texto normalizado
 }

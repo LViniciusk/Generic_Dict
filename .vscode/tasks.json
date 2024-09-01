@@ -27,7 +27,7 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "./output/${fileBasenameNoExtension}.exe",
+      "command": "./output/${fileBasenameNoExtension}.exe 4 biblia_sagrada_english.txt",
       "group": {
         "kind": "build",
         "isDefault": true

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     // Verifica se o número de argumentos está correto
     if (argc != 3)
     {
-        display_usage(argv[0]);
+        cerr << "Invalid Arguments, open Readme.txt" << endl;
         return 1;
     }
 
@@ -30,13 +30,13 @@ int main(int argc, char *argv[])
     ofstream out("./output/saida.txt");
     if (!out)
     {
-        cerr << "Erro ao abrir o arquivo de saída" << endl;
+        cerr << "Error opening output file" << endl;
         return 1;
     }
 
     // Redireciona cout para o arquivo de saída
     streambuf *coutbuf = cout.rdbuf(); // salva o buffer original
-    cout.rdbuf(out.rdbuf()); // redireciona cout para o arquivo
+    cout.rdbuf(out.rdbuf());           // redireciona cout para o arquivo
 
     // Define o modo de estrutura
     int mode_structure = std::stoi(argv[1]);
@@ -45,15 +45,15 @@ int main(int argc, char *argv[])
     string filename = argv[2];
 
     // Verifica se a estrutura fornecida é válida
-    if (mode_structure == 1)
+    if (mode_structure == 1) // AVL
     {
-        Dict<AVLTree<UnicodeString, u_comparator>> dict;
+        Dict<AVLTree<UnicodeString, int, u_comparator>> dict;
 
         // Inicia a contagem do tempo
         auto start = high_resolution_clock::now();
 
         // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = read_file("./Textos/" + filename);
+        stringstream file = LoadFile("./Textos/" + filename);
         dict.add(file);
 
         // Finaliza a contagem do tempo e calcula a duração
@@ -66,42 +66,19 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl << endl;
-        dict.print();        
-    }
-    else if (mode_structure == 2)
-    {
-        Dict<RBTree<UnicodeString, u_comparator>> dict;
-
-        // Inicia a contagem do tempo
-        auto start = high_resolution_clock::now();
-
-        // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = read_file("./Textos/" + filename);
-        dict.add(file);
-
-        // Finaliza a contagem do tempo e calcula a duração
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-
-        // Imprime o tempo de execução
-        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
-        cout << "Nome do arquivo: " << filename << endl;
-        cout << "Numero de palavras: " << dict.size() << endl;
-        cout << "Numero de Comparações: " << dict.comparisons() << endl;
-        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl << endl;
+        cout << "Lista de palavras: " << endl
+             << endl;
         dict.print();
     }
-    else if (mode_structure == 3)
+    else if (mode_structure == 2) // RB
     {
-        Dict<HashTable2<UnicodeString, int, u_comparator>> dict;
+        Dict<RBTree<UnicodeString, int, u_comparator>> dict;
 
         // Inicia a contagem do tempo
         auto start = high_resolution_clock::now();
 
         // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = read_file("./Textos/" + filename);
+        stringstream file = LoadFile("./Textos/" + filename);
         dict.add(file);
 
         // Finaliza a contagem do tempo e calcula a duração
@@ -114,10 +91,36 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl << endl;
+        cout << "Lista de palavras: " << endl
+             << endl;
         dict.print();
     }
-    else if (mode_structure == 4)
+    else if (mode_structure == 3) // Hash2
+    {
+        Dict<Hash2Table<UnicodeString, int, u_comparator>> dict;
+
+        // Inicia a contagem do tempo
+        auto start = high_resolution_clock::now();
+
+        // Lê o arquivo e insere as palavras no dicionário
+        stringstream file = LoadFile("./Textos/" + filename);
+        dict.add(file);
+
+        // Finaliza a contagem do tempo e calcula a duração
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+
+        // Imprime o tempo de execução
+        cout << "Estrutura de Dados: " << TypeName(typeid(dict).name()) << endl;
+        cout << "Nome do arquivo: " << filename << endl;
+        cout << "Numero de palavras: " << dict.size() << endl;
+        cout << "Numero de Comparações: " << dict.comparisons() << endl;
+        cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+        cout << "Lista de palavras: " << endl
+             << endl;
+        dict.print();
+    }
+    else if (mode_structure == 4) // Hash
     {
         Dict<HashTable<UnicodeString, int, u_comparator>> dict;
 
@@ -125,7 +128,7 @@ int main(int argc, char *argv[])
         auto start = high_resolution_clock::now();
 
         // Lê o arquivo e insere as palavras no dicionário
-        stringstream file = read_file("./Textos/" + filename);
+        stringstream file = LoadFile("./Textos/" + filename);
         dict.add(file);
 
         // Finaliza a contagem do tempo e calcula a duração
@@ -138,12 +141,13 @@ int main(int argc, char *argv[])
         cout << "Numero de palavras: " << dict.size() << endl;
         cout << "Numero de Comparações: " << dict.comparisons() << endl;
         cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-        cout << "Lista de palavras: " << endl << endl;
+        cout << "Lista de palavras: " << endl
+             << endl;
         dict.print();
     }
     else
     {
-        cerr << "Estrutura não suportada: " << mode_structure << endl;
+        cerr << "Invalid Arguments, open Readme.txt" << endl;
         return 1;
     }
 
