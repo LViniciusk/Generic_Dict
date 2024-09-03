@@ -245,24 +245,6 @@ public:
         throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 
-    // função para incrementar o valor de uma chave caso seja int
-    void increment(const Key &k)
-    {
-        if constexpr (std::is_same<Value, int>::value)
-        {
-            size_t i = hash_code(k);
-            for (auto it = (*m_table)[i].begin(); it != (*m_table)[i].end(); ++it)
-            {
-                comps++;
-                if (it->first == k)
-                {
-                    it->second++;
-                    return;
-                }
-            }
-        }
-    }
-
     // Reorganiza a tabela de hash com um novo tamanho
     void rehash(size_t m)
     {
@@ -348,28 +330,30 @@ public:
         reserve(m_number_of_elements);
     }
 
-    // Operador de índice para acessar ou criar elementos na tabela
+    // // Operador de índice para acessar ou criar elementos na tabela
+    // Value &operator[](const Key &k)
+    // {
+    //     size_t i = hash_code(k);
+    //     for (auto &p : (*m_table)[i])
+    //     {
+    //         comps++;
+    //         if (p.first == k)
+    //         {
+    //             return p.second;
+    //         }
+    //     }
+    //     (*m_table)[i].push_back(std::make_pair(k, Value())); // Cria um novo par chave-valor se a chave não existir
+    //     m_number_of_elements++;
+    //     return (*m_table)[i].back().second;
+    // }
+
+    // Operador de índice const para acessar elementos na tabela
     Value &operator[](const Key &k)
     {
         size_t i = hash_code(k);
         for (auto &p : (*m_table)[i])
         {
-            if (p.first == k)
-            {
-                return p.second;
-            }
-        }
-        (*m_table)[i].push_back(std::make_pair(k, Value())); // Cria um novo par chave-valor se a chave não existir
-        m_number_of_elements++;
-        return (*m_table)[i].back().second;
-    }
-
-    // Operador de índice const para acessar elementos na tabela
-    const Value &operator[](const Key &k) const
-    {
-        size_t i = hash_code(k);
-        for (auto &p : (*m_table)[i])
-        {
+            comps++;
             if (p.first == k)
             {
                 return p.second;

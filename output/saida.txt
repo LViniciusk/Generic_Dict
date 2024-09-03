@@ -1,8 +1,8 @@
-Estrutura de Dados: HashTable Separate Chaining
+Estrutura de Dados: HashTable Open Addressing
 Nome do arquivo: biblia_sagrada_english.txt
 Numero de palavras: 16388
-Numero de Comparações: 2526478
-Tempo de execução: 614ms
+Numero de Comparações: 977375
+Tempo de execução: 624ms
 Lista de palavras: 
 
 a: 11603

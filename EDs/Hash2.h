@@ -237,24 +237,6 @@ public:
         throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 
-    // função para incrementar o valor de uma chave caso seja int
-    void increment(const Key &k)
-    {
-        if constexpr (std::is_same<Value, int>::value)
-        {
-            size_t i = 0;
-            size_t index;
-            do
-            {
-                index = hash_code(k, i++);
-                comps++;
-                if (m_table[index].state == OCCUPIED && m_table[index].key == k){
-                    m_table[index].value++;
-                    return;
-                }
-            } while (i < m_table_size);
-        }
-    }
 
     // Reorganiza a tabela de hash com um novo tamanho
     void rehash(size_t m)
@@ -372,6 +354,7 @@ public:
             }
             else if (m_table[index].key == k)
             {
+                comps++;
                 return m_table[index].value;
             }
         } while (i < m_table_size);
@@ -379,20 +362,20 @@ public:
     }
 
     // Operador de índice const para acessar elementos na tabela
-    const Value &operator[](const Key &k) const
-    {
-        size_t i = 0;
-        size_t index;
-        do
-        {
-            index = hash_code(k, i++);
-            if (m_table[index].state == OCCUPIED && m_table[index].key == k)
-            {
-                return m_table[index].value;
-            }
-        } while (i < m_table_size);
-        throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
-    }
+    // const Value &operator[](const Key &k) const
+    // {
+    //     size_t i = 0;
+    //     size_t index;
+    //     do
+    //     {
+    //         index = hash_code(k, i++);
+    //         if (m_table[index].state == OCCUPIED && m_table[index].key == k)
+    //         {
+    //             return m_table[index].value;
+    //         }
+    //     } while (i < m_table_size);
+    //     throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
+    // }
 };
 
 #endif

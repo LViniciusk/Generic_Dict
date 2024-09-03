@@ -16,10 +16,11 @@ private:
 public:
     void add(icu::UnicodeString key, unsigned int value = 1)
     {
-        if(!_dict.contains(key))
-            _dict.insert(key, 1);
-        else
-            _dict.increment(key);
+        try{
+            _dict[key] += value;
+        } catch (std::out_of_range &e){
+            _dict.insert(key, value);
+        }
     }
 
     void print()

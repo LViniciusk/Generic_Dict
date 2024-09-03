@@ -27,7 +27,7 @@ struct RBNode
     Color color;              // Cor do nó (vermelho ou preto)
 
     // Construtor do nó
-    RBNode(T k, Value v) : key({k,v}), left(nullptr), right(nullptr), parent(nullptr), color(RED) {}
+    RBNode(T k, Value v) : key({k, v}), left(nullptr), right(nullptr), parent(nullptr), color(RED) {}
 };
 
 // Classe da árvore rubro negra
@@ -455,8 +455,10 @@ public:
         return Value();
     }
 
-    // Função para incrementar o valor associado a uma chave na árvore
-    void increment(T key)
+
+
+    // Operador de índice const para acessar elementos na tabela
+    Value &operator[](const T &key)
     {
         RBNode<T, Value> *node = root;
         while (node != nullptr)
@@ -474,13 +476,10 @@ public:
             else
             {
                 comps++;
-                if constexpr (std::is_same<Value, int>::value)
-                {
-                    node->key.second++;
-                }
-                return;
+                return node->key.second;
             }
         }
+        throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 
     // Função para imprimir a árvore em ordem
