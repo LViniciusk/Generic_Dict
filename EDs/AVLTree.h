@@ -378,6 +378,35 @@ public:
         return Value(); // Retorna um objeto default se não encontrar a chave
     }
 
+    // Função para inccrementar o valor caso seja int
+    void increment(T key)
+    {
+
+        if constexpr (std::is_same<Value, int>::value)
+        {
+            Node<T, Value> *node = root;
+            while (node != nullptr)
+            {
+                comps++;
+                if (compare(key, node->key.first))
+                {
+                    node = node->left;
+                }
+                else if (compare(node->key.first, key))
+                {
+                    comps++;
+                    node = node->right;
+                }
+                else
+                {
+                    comps++;
+                    node->key.second++;
+                    return;
+                }
+            }
+        }
+    }
+
     // Função para imprimir a árvore
     void print() const
     {

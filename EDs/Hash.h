@@ -245,6 +245,24 @@ public:
         throw std::out_of_range("Key not found"); // Lança exceção se a chave não for encontrada
     }
 
+    // função para incrementar o valor de uma chave caso seja int
+    void increment(const Key &k)
+    {
+        if constexpr (std::is_same<Value, int>::value)
+        {
+            size_t i = hash_code(k);
+            for (auto it = (*m_table)[i].begin(); it != (*m_table)[i].end(); ++it)
+            {
+                comps++;
+                if (it->first == k)
+                {
+                    it->second++;
+                    return;
+                }
+            }
+        }
+    }
+
     // Reorganiza a tabela de hash com um novo tamanho
     void rehash(size_t m)
     {

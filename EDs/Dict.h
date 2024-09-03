@@ -19,7 +19,7 @@ public:
         if(!_dict.contains(key))
             _dict.insert(key, 1);
         else
-            _dict.update(key, _dict.find(key) + value);
+            _dict.increment(key);
     }
 
     void print()

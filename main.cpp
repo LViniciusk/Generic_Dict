@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
 
 // comparações DEPOIS
-// AVLTree - 47403790 - 47.4M - 1836ms
-// RBTree - 44692755 - 44.6M - 1693ms
-// Hash2Table - 3898484 - 3.8M - 846ms
-// HashTable - 3778178 - 3.7M - 826ms
+// AVLTree - 31888548 - 31.8M - 1024ms
+// RBTree - 30060632 - 30.0M - 988ms
+// Hash2Table - 2627467 - 2.6M - 581ms
+// HashTable - 2526478 - 2.5M - 572ms

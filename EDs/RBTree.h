@@ -455,6 +455,34 @@ public:
         return Value();
     }
 
+    // Função para incrementar o valor associado a uma chave na árvore
+    void increment(T key)
+    {
+        RBNode<T, Value> *node = root;
+        while (node != nullptr)
+        {
+            comps++;
+            if (compare(key, node->key.first))
+            {
+                node = node->left;
+            }
+            else if (compare(node->key.first, key))
+            {
+                comps++;
+                node = node->right;
+            }
+            else
+            {
+                comps++;
+                if constexpr (std::is_same<Value, int>::value)
+                {
+                    node->key.second++;
+                }
+                return;
+            }
+        }
+    }
+
     // Função para imprimir a árvore em ordem
     void print() const
     {
