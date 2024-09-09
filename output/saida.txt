@@ -1,8 +1,8 @@
-Estrutura de Dados: HashTable Separate Chaining
+Estrutura de Dados: AVLTree
 Nome do arquivo: biblia_sagrada_english.txt
 Numero de palavras: 16388
-Numero de Comparações: 1274778
-Tempo de execução: 536ms
+Numero de Comparações: 16373306
+Tempo de execução: 719ms
 Lista de palavras: 
 
 a: 11603
@@ -16393,4 +16393,3 @@ zomzommims: 1
 zoom: 1
 zorobabel: 36
 zuzim: 1
-
