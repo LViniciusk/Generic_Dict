@@ -172,7 +172,7 @@ public:
     }
 
     // Insere uma chave e um valor na tabela de hash, realiza rehash se necessário
-    bool insert(const Key &k, const Value &v = 1)
+    bool insert(const Key &k, const Value &v)
     {
         // Verifica se o fator de carga ultrapassou o limite e realiza rehash se necessário
         if (load_factor() > m_load_factor)

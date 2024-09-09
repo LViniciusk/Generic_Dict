@@ -7,6 +7,7 @@
 #include <unicode/ustream.h>
 #include <unicode/ucnv.h>
 #include <unicode/coll.h>
+#include <variant>
 #include "extras.h"
 
 // Estrutura de nó da árvore AVL
@@ -22,14 +23,25 @@ struct Node
 };
 
 // Implementação da árvore AVL com balanceamento automático
-template <typename T, typename Value = int, typename COMPARATOR = comparator<T>>
+template <typename T, typename Value>
 class AVLTree
 {
 private:
     Node<T, Value> *root = nullptr; // Raiz da árvore
-    COMPARATOR compare;             // Função de comparação personalizada
+    auto compare = get_comparator();             // Função de comparação personalizada
     unsigned int comps = 0;         // Contador de comparações
     unsigned int _size = 0;         // Número de elementos na árvore
+    std::variant<u_comparator, comparator> get_comparator()
+    {
+        if constexpr (std::is_same<T, icu::UnicodeString>::value)
+        {
+            return u_comparator();
+        }
+        else
+        {
+            return comparator();
+        }
+    }
 
     // Função para obter a altura de um nó
     int height(Node<T, Value> *node)
@@ -179,24 +191,24 @@ private:
     }
 
     // Função recursiva para inserir um novo nó na árvore
-    Node<T, Value> *_insert(Node<T, Value> *node, T key, Value value)
+    Node<T, Value> *_insert(Node<T, Value> *node, T key)
     {
         if (node == nullptr)
         {
             _size++;
-            return new Node<T, Value>(key, value);
+            return new Node<T, Value>(key);
         }
         comps++; // Incrementa o contador de comparações
 
         // Navega pela árvore para encontrar a posição de inserção
         if (compare(key, node->key.first))
         {
-            node->left = _insert(node->left, key, value);
+            node->left = _insert(node->left, key);
         }
         else if (compare(node->key.first, key))
         {
             comps++;
-            node->right = _insert(node->right, key, value);
+            node->right = _insert(node->right, key);
         }
         else
         {
@@ -324,16 +336,16 @@ private:
 
 public:
     // Construtor da árvore AVL
-    AVLTree(COMPARATOR comp = COMPARATOR()) : compare(comp)
+    AVLTree()
     {
         root = nullptr;
         _size = 0;
     }
 
     // Função para inserir uma chave na árvore
-    void insert(T key, Value value)
+    void insert(T key)
     {
-        root = _insert(root, key, value);
+        root = _insert(root, key);
     }
 
     // Função para remover uma chave da árvore

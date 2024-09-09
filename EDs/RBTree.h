@@ -223,7 +223,7 @@ private:
     }
 
     // Função auxiliar para remoção de um nó com uma determinada chave
-    RBNode<T, Value> *_delete(RBNode<T, Value> *node, T key, unsigned int value = 1)
+    RBNode<T, Value> *_delete(RBNode<T, Value> *node, T key)
     {
         RBNode<T, Value> *z = root;
         RBNode<T, Value> *y = nullptr;
@@ -297,7 +297,7 @@ private:
     }
 
     // Função auxiliar para inserção de um novo nó
-    RBNode<T, Value> *_insert(RBNode<T, Value> *node, T key, unsigned int value = 1)
+    RBNode<T, Value> *_insert(RBNode<T, Value> *node, T key, Value value)
     {
         if (node == nullptr)
         {
@@ -392,7 +392,7 @@ public:
     }
 
     // Função para inserir um nó na árvore
-    void insert(T key, unsigned int value = 1)
+    void insert(T key, Value value)
     {
         RBNode<T, Value> *newNode = _insert(root, key, value);
         root = newNode;
@@ -400,13 +400,13 @@ public:
     }
 
     // Função para remover um nó da árvore
-    void remove(T key, unsigned int value = 1)
+    void remove(T key)
     {
-        root = _delete(root, key, value);
+        root = _delete(root, key);
     }
 
     // Função para atualizar o valor associado a uma chave na árvore
-    void update(T key, unsigned int value)
+    void update(T key, Value value)
     {
         RBNode<T, Value> *node = root;
         while (node != nullptr)

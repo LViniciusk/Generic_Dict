@@ -16,21 +16,28 @@ private:
 public:
     void add(icu::UnicodeString key, unsigned int value = 1)
     {
-        try{
+        try
+        {
             _dict[key] += value;
-        } catch (std::out_of_range &e){
+        }
+        catch (std::out_of_range &e)
+        {
             _dict.insert(key, value);
         }
     }
 
-    void print()
-    {
-        _dict.print();
-    }
-
     void remove(icu::UnicodeString key)
     {
-        _dict.remove(key);
+        try
+        {
+            _dict[key] -= 1;
+            if (_dict[key] <= 0)
+                _dict.remove(key);
+        }
+        catch (std::out_of_range &e)
+        {
+            std::cerr << "Key not found" << std::endl;
+        }
     }
 
     void update(icu::UnicodeString key, unsigned int value)
@@ -38,9 +45,9 @@ public:
         _dict.update(key, value);
     }
 
-    void find(icu::UnicodeString key)
+    int find(icu::UnicodeString key)
     {
-        _dict.find(key);
+        return _dict.find(key);
     }
 
     void clear()
@@ -61,6 +68,11 @@ public:
     size_t comparisons()
     {
         return _dict.comparisons();
+    }
+
+    void print()
+    {
+        _dict.print();
     }
 };
 
