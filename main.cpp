@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <sstream>
 #include <variant>
@@ -58,8 +59,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    namespace fs = std::filesystem;
+
+    std::string dirPath = "./output/" + std::string(argv[2]).substr(0, std::string(argv[2]).size() - 4) + "/";
+
+    // Verifica se o diretório existe; se não, cria o diretório
+    if (!fs::exists(dirPath))
+    {
+        fs::create_directories(dirPath);
+    }
+
     // Abre o arquivo de saída
-    ofstream out("./output/saida.txt");
+    std::ofstream out(dirPath + std::string(argv[1]) + '-' + std::string(argv[2]));
+
     if (!out)
     {
         cerr << "Error opening output file" << endl;
@@ -109,15 +121,14 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// comparações ANTES 
+// comparações ANTES
 // AVLTree - 24979970 - 24.9M - 1149ms
 // RBTree - 15030316 - 15M - 882ms
 // Hash2Table - 1313671 - 1.3M - 552ms
 // HashTable - 1263239 - 1.2M - 573ms
 
-
 // comparações DEPOIS
 // AVLTree - 16373306 - 16.3M - 719ms
 // RBTree - 15428509 - 15.4M - 693ms
-// Hash2Table - 977375 - 0.9M - 581ms
-// HashTable - 1274778 - 1.2M - 510ms
+// Hash2Table - 977375 - 0.9M - 467ms
+// HashTable - 1274778 - 1.2M - 434ms

@@ -10,9 +10,12 @@
     3 - HashTable Open Addressing
     4 - HashTable Separate Chaining 
 
--- Exemple -- 
-    main.exe 4 insane.txt
+-- Example -- 
+    main.exe 4 Example.txt
 
 
 
 note: the text file needs to be in Textos/
+
+GitHub repository:
+    https://github.com/LViniciusk/Generic_Dict

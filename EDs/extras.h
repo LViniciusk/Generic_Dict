@@ -23,12 +23,9 @@ namespace std
     template <>
     struct hash<icu::UnicodeString>
     {
-        // Função hash que converte icu::UnicodeString para UTF-8 e calcula o hash do std::string resultante
         size_t operator()(const icu::UnicodeString &str) const
         {
-            std::string utf8str;
-            str.toUTF8String(utf8str);                // Converte para string UTF-8
-            return std::hash<std::string>()(utf8str); // Retorna o hash da string UTF-8
+            return static_cast<size_t>(str.hashCode());
         }
     };
 }
